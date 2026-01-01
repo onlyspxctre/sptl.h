@@ -34,7 +34,7 @@
         }                                                                                                              \
     } while (0)
 
-#define sp_da_append(da, element)                                                                                      \
+#define sp_da_push(da, element)                                                                                        \
     do {                                                                                                               \
         sp_da_reserve((da), (da)->count + 1);                                                                          \
         (da)->data[(da)->count] = element;                                                                             \
@@ -45,6 +45,13 @@
     do {                                                                                                               \
         memset((da)->data, 0, (da)->count);                                                                            \
         (da)->count = 0;                                                                                               \
+    } while (0)
+
+#define sp_da_free(da)                                                                                                 \
+    do {                                                                                                               \
+        free((da)->data);                                                                                              \
+        (da)->count = 0;                                                                                               \
+        (da)->capacity = 0;                                                                                            \
     } while (0)
 
 Sp_Dynamic_Array(char) Sp_String_Builder;
