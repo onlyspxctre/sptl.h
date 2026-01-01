@@ -99,6 +99,22 @@ __attribute__((format(printf, 2, 3))) int sp_sb_appendf(Sp_String_Builder* sb, c
         }                                                                                                              \
     } while (0)
 
+#define sp_ll_push_front(ll, element)                                                                                  \
+    do {                                                                                                               \
+        if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */                                      \
+            (ll)->head = malloc(sizeof(*(ll)->head));                                                                  \
+            (ll)->head->data = element;                                                                                \
+            (ll)->tail = (ll)->head;                                                                                   \
+        } else {                                                                                                       \
+            (ll)->head->prev = malloc(sizeof(*(ll)->tail));                                                            \
+            (ll)->head->prev->next = (ll)->head;                                                                       \
+            (ll)->head = (ll)->head->prev;                                                                             \
+            (ll)->head->data = element;                                                                                \
+        }                                                                                                              \
+    } while (0)
+
+// TODO: Make sp_ll_pop use a common backend for common functions
+//
 #define sp_ll_pop_back(ll)                                                                                             \
     do {                                                                                                               \
         if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */                                      \
@@ -114,6 +130,21 @@ __attribute__((format(printf, 2, 3))) int sp_sb_appendf(Sp_String_Builder* sb, c
         }                                                                                                              \
     } while (0)
 
+#define sp_ll_pop_front(ll)                                                                                            \
+    do {                                                                                                               \
+        if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */                                      \
+            break;                                                                                                     \
+        } else if ((ll)->head == (ll)->tail) { /* count == 1 */                                                        \
+            free((ll)->head);                                                                                          \
+            (ll)->head = NULL;                                                                                         \
+            (ll)->tail = NULL;                                                                                         \
+        } else {                                                                                                       \
+            (ll)->head = (ll)->head->next;                                                                             \
+            free((ll)->head->prev);                                                                                    \
+            (ll)->head->prev = NULL;                                                                                   \
+        }                                                                                                              \
+    } while (0)
+
 #define sp_ll_free(ll)                                                                                                 \
     do {                                                                                                               \
         void* next;                                                                                                    \
@@ -126,10 +157,12 @@ __attribute__((format(printf, 2, 3))) int sp_sb_appendf(Sp_String_Builder* sb, c
         (ll)->tail = NULL;                                                                                             \
     } while (0)
 
+#define sp_ll_node_ptr(ll) __typeof__((ll)->head)
+
 #define FNV_PRIME_32 16777619
 #define FNV_OFFSET_BASIS_32 2166136261
 
-uint32_t hash_fnv(const char* data, const size_t bytes) {
+static inline uint32_t hash_fnv(const char* data, const size_t bytes) {
     uint32_t hash = FNV_OFFSET_BASIS_32;
 
     for (size_t i = 0; i < bytes; ++i) {
