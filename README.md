@@ -5,11 +5,16 @@ Recreational header-only library for simple implementations of common utils and 
 > [!WARNING]
 > This library is extremely experimental and should only be used for recreational purposes only!
 
+> [!NOTE]
+> Some macros in this library uses non-standard extensions that may not be available in all C compilers. For compatibility sakes, only the GCC and Clang compilers are supported.
+
 ## Features
 
-- Dynamic Array
-- Linked List
-- Hash Table (WIP)
+- Macro-implemented data structures (type safe, generic)
+- Currently implemented data structures: 
+    - Dynamic Array
+    - Linked List
+    - Hash Table
 
 ## References
 
