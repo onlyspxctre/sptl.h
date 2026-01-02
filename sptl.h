@@ -222,6 +222,7 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
                 continue;                                                                                              \
             }                                                                                                          \
             sp_ht_node_insert((ht), old_nodes[i].key, old_nodes[i].value);                                             \
+            free(old_nodes[i].key);                                                                                    \
         }                                                                                                              \
         free(old_nodes);                                                                                               \
     } while (0)
@@ -273,7 +274,8 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
 /*
  * WARNING: Uses non-standard statement expressions, which may not be supported by all C compilers.
  *
- * Returns an `sp_ht_node_ptr(ht)`, or a pointer to the node of the value of `expected_key`, or an empty node if none was found.
+ * Returns an `sp_ht_node_ptr(ht)`, or a pointer to the node of the value of `expected_key`, or an empty node if none
+ * was found.
  */
 #define sp_ht_get(ht, expected_key) (&(ht)->nodes[sp_ht_hash((ht), (expected_key))])
 
@@ -287,4 +289,15 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
                 putchar('\n');                                                                                         \
             }                                                                                                          \
         }                                                                                                              \
+    } while (0)
+
+#define sp_ht_free(ht)                                                                                                 \
+    do {                                                                                                               \
+        for (size_t i = 0; i < (ht)->capacity; ++i) {                                                                  \
+            if (!(ht)->nodes[i].key) {                                                                                 \
+                continue;                                                                                              \
+            }                                                                                                          \
+            free((ht)->nodes[i].key);                                                                                  \
+        }                                                                                                              \
+        free((ht)->nodes);                                                                                             \
     } while (0)\

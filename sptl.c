@@ -22,4 +22,6 @@ int main(void) {
     printf("%c\n", ptr->value);
     ptr = sp_ht_get(&ht, "F");
     printf("%c\n", ptr->value);
+
+    sp_ht_free(&ht);
 }
