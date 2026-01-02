@@ -192,23 +192,27 @@ static inline uint32_t hash_fnv(const char* data, const size_t bytes) {
     }
 
 #define SP_HT_INIT_CAP 16
+#define SP_HT_LOAD_CAPACITY 0.75
 #define sp_ht_reserve(ht, expected)                                                                                    \
     do {                                                                                                               \
-        if ((ht)->capacity < ((size_t) (expected))) {                                                                  \
+        if ((ht)->capacity < (expected)) {                                                                             \
             if ((ht)->capacity == 0) {                                                                                 \
                 (ht)->capacity = SP_HT_INIT_CAP;                                                                       \
             }                                                                                                          \
-            while ((ht)->capacity < ((size_t) (expected))) {                                                           \
+            size_t old_capacity = (ht)->capacity;                                                                      \
+            while ((ht)->capacity < (size_t) (SP_HT_LOAD_CAPACITY * (double) (expected))) {                            \
                 (ht)->capacity *= 2;                                                                                   \
             }                                                                                                          \
-            (ht)->nodes = realloc((ht)->nodes, (ht)->capacity * sizeof(*(ht)->nodes));                                 \
+            if (!(ht)->nodes) {                                                                                        \
+                (ht)->nodes = malloc((ht)->capacity * sizeof(*(ht)->nodes));                                           \
+            } else {                                                                                                   \
+                sp_ht_rehash((ht), old_capacity);                                                                      \
+            }                                                                                                          \
         }                                                                                                              \
     } while (0)
 
-#define sp_ht_insert(ht, expected_key, e)                                                                              \
+#define sp_ht_node_insert(ht, expected_key, element)                                                                   \
     do {                                                                                                               \
-        sp_ht_reserve((ht), (ht)->count + 1);                                                                          \
-        __typeof__(e) element = e;                                                                                     \
         size_t index = hash_fnv((expected_key), strlen((expected_key))) % (ht)->capacity;                              \
         while (index < (ht)->capacity) {                                                                               \
             if ((ht)->nodes[index].key == NULL) {                                                                      \
@@ -220,6 +224,26 @@ static inline uint32_t hash_fnv(const char* data, const size_t bytes) {
             }                                                                                                          \
             ++index;                                                                                                   \
         }                                                                                                              \
+    } while (0)
+
+#define sp_ht_rehash(ht, old_capacity)                                                                                 \
+    do {                                                                                                               \
+        __typeof__((ht)->nodes) old_nodes = (ht)->nodes;                                                               \
+        (ht)->nodes = malloc((ht)->capacity * sizeof(*(ht)->nodes));                                                   \
+        for (size_t i = 0; i < old_capacity; ++i) {                                                                    \
+            if (!old_nodes[i].key) {                                                                                   \
+                continue;                                                                                              \
+            }                                                                                                          \
+            sp_ht_node_insert((ht), old_nodes[i].key, old_nodes[i].value);                                             \
+        }                                                                                                              \
+        free(old_nodes);                                                                                               \
+    } while (0)
+
+#define sp_ht_insert(ht, expected_key, e)                                                                              \
+    do {                                                                                                               \
+        sp_ht_reserve((ht), (ht)->count + 1);                                                                          \
+        __typeof__(e) element = e;                                                                                     \
+        sp_ht_node_insert((ht), (expected_key), (element));                                                            \
     } while (0)
 
 #define sp_ht_print(ht)                                                                                                \
