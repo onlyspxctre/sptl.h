@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define INNER_CONCAT(a, b) a##b
 #define CONCAT(a, b) INNER_CONCAT(a, b)
@@ -57,11 +58,11 @@
 Sp_Dynamic_Array(char) Sp_String_Builder;
 
 /*
-Appends formatted `format` to `sb`, extending the dynamic array if necessary.
-
-Increments `sb->count` by the length of parsed `format` excluding the null terminator, but `sb->data` itself is
-safe-to-use.
-*/
+ * Appends formatted `format` to `sb`, extending the dynamic array if necessary.
+ *
+ * Increments `sb->count` by the length of parsed `format` excluding the null terminator, but `sb->data` itself is
+ * safe-to-use.
+ */
 __attribute__((format(printf, 2, 3))) int sp_sb_appendf(Sp_String_Builder* sb, const char* format, ...) {
     va_list arg;
 
@@ -121,7 +122,7 @@ __attribute__((format(printf, 2, 3))) int sp_sb_appendf(Sp_String_Builder* sb, c
     } while (0)
 
 // TODO: Make sp_ll_pop use a common backend for common functions
-//
+
 #define sp_ll_pop_back(ll)                                                                                             \
     do {                                                                                                               \
         if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */                                      \
@@ -180,13 +181,17 @@ static inline uint32_t hash_fnv(const char* data, const size_t bytes) {
 }
 
 #define Sp_Hash_Table(T)                                                                                               \
-    struct {                                                                                                           \
-        T* data;                                                                                                       \
+    struct CONCAT(Sp_Hash_Table_Node, __LINE__) {                                                                      \
+        char* key;                                                                                                     \
+        T value;                                                                                                       \
+    };                                                                                                                 \
+    typedef struct {                                                                                                   \
+        struct CONCAT(Sp_Hash_Table_Node, __LINE__) * nodes;                                                           \
         size_t count;                                                                                                  \
         size_t capacity;                                                                                               \
     }
 
-#define SP_HT_INIT_CAP 64
+#define SP_HT_INIT_CAP 16
 #define sp_ht_reserve(ht, expected)                                                                                    \
     do {                                                                                                               \
         if ((ht)->capacity < ((size_t) (expected))) {                                                                  \
@@ -196,8 +201,35 @@ static inline uint32_t hash_fnv(const char* data, const size_t bytes) {
             while ((ht)->capacity < ((size_t) (expected))) {                                                           \
                 (ht)->capacity *= 2;                                                                                   \
             }                                                                                                          \
-            (ht)->data = realloc((ht)->data, (ht)->capacity);                                                          \
+            (ht)->nodes = realloc((ht)->nodes, (ht)->capacity * sizeof(*(ht)->nodes));                                 \
         }                                                                                                              \
     } while (0)
 
-#define sp_ht_insert(ht)\
+#define sp_ht_insert(ht, expected_key, e)                                                                              \
+    do {                                                                                                               \
+        sp_ht_reserve((ht), (ht)->count + 1);                                                                          \
+        __typeof__(e) element = e;                                                                                     \
+        size_t index = hash_fnv((expected_key), strlen((expected_key))) % (ht)->capacity;                              \
+        while (index < (ht)->capacity) {                                                                               \
+            if ((ht)->nodes[index].key == NULL) {                                                                      \
+                (ht)->nodes[index].key = malloc(strlen((expected_key)) + 1);                                           \
+                strncpy((ht)->nodes[index].key, (expected_key), strlen((expected_key)));                               \
+                (ht)->nodes[index].value = element;                                                                    \
+                ++(ht)->count;                                                                                         \
+                break;                                                                                                 \
+            }                                                                                                          \
+            ++index;                                                                                                   \
+        }                                                                                                              \
+    } while (0)
+
+#define sp_ht_print(ht)                                                                                                \
+    do {                                                                                                               \
+        for (size_t i = 0; i < (ht)->capacity; ++i) {                                                                  \
+            printf("%ld: ", i);                                                                                        \
+            if ((ht)->nodes[i].key) {                                                                                  \
+                printf("\"%s\" -> %c\n", (ht)->nodes[i].key, (ht)->nodes[i].value);                                    \
+            } else {                                                                                                   \
+                putchar('\n');                                                                                         \
+            }                                                                                                          \
+        }                                                                                                              \
+    } while (0)\
