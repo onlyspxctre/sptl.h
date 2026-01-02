@@ -215,11 +215,14 @@ static inline uint32_t hash_fnv(const char* data, const size_t bytes) {
     do {                                                                                                               \
         size_t index = hash_fnv((expected_key), strlen((expected_key))) % (ht)->capacity;                              \
         while (index < (ht)->capacity) {                                                                               \
-            if ((ht)->nodes[index].key == NULL) {                                                                      \
+            if ((ht)->nodes[index].key == NULL) { /* empty node (insertion) */                                         \
                 (ht)->nodes[index].key = malloc(strlen((expected_key)) + 1);                                           \
                 strncpy((ht)->nodes[index].key, (expected_key), strlen((expected_key)));                               \
                 (ht)->nodes[index].value = element;                                                                    \
                 ++(ht)->count;                                                                                         \
+                break;                                                                                                 \
+            } else if (strcmp((ht)->nodes[index].key, (expected_key)) == 0) { /* existing node w/ key (replacement) */ \
+                (ht)->nodes[index].value = element;                                                                    \
                 break;                                                                                                 \
             }                                                                                                          \
             ++index;                                                                                                   \
