@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SPTL_H
+#define SPTL_H
 
 #include <stdarg.h>
 #include <stdint.h>
@@ -12,7 +13,6 @@
 /*
  * Standard-issue dynamic array.
  *
- * TODO: support other data types, currently only supported data type is char
  */
 #define Sp_Dynamic_Array(T)                                                                                            \
     typedef struct {                                                                                                   \
@@ -31,7 +31,7 @@
             while ((da)->capacity < ((size_t) (expected))) {                                                           \
                 (da)->capacity *= 2;                                                                                   \
             }                                                                                                          \
-            (da)->data = realloc((da)->data, (da)->capacity);                                                          \
+            (da)->data = realloc((da)->data, (da)->capacity * sizeof(*(da)->data));                                    \
         }                                                                                                              \
     } while (0)
 
@@ -42,6 +42,9 @@
         ++(da)->count;                                                                                                 \
     } while (0)
 
+/*
+ * Clears the dynamic array, but does NOT free it.
+ */
 #define sp_da_clear(da)                                                                                                \
     do {                                                                                                               \
         memset((da)->data, 0, (da)->count);                                                                            \
@@ -180,6 +183,12 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
     return hash;
 }
 
+/*
+ * Hash table implementation with open addressing collision resolution.
+ *
+ * Re-hashes entire table at 2x capacity on insertion when load factor reaches the ratio as defined by
+ * `SP_HT_LOAD_CAPACITY` (default = 0.75).
+ */
 #define Sp_Hash_Table(T)                                                                                               \
     struct CONCAT(Sp_Hash_Table_Node, __LINE__) {                                                                      \
         char* key;                                                                                                     \
@@ -250,7 +259,7 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
     do {                                                                                                               \
         size_t index = hash_fnv((expected_key), strlen((expected_key))) % (ht)->capacity;                              \
         while (index < (ht)->capacity) {                                                                               \
-            if ((ht)->nodes[index].key == NULL) { /* empty node (insertion) */                                         \
+            if (!(ht)->nodes[index].key) { /* empty node (insertion) */                                                \
                 (ht)->nodes[index].key = malloc(strlen((expected_key)) + 1);                                           \
                 strncpy((ht)->nodes[index].key, (expected_key), strlen((expected_key)));                               \
                 (ht)->nodes[index].value = element;                                                                    \
@@ -279,6 +288,9 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
  */
 #define sp_ht_get(ht, expected_key) (&(ht)->nodes[sp_ht_hash((ht), (expected_key))])
 
+/*
+ * TODO: FOR DEBUGGING PURPOSES ONLY, REMOVE LATER MOST LIKELY
+ */
 #define sp_ht_print(ht)                                                                                                \
     do {                                                                                                               \
         for (size_t i = 0; i < (ht)->capacity; ++i) {                                                                  \
@@ -301,3 +313,5 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
         }                                                                                                              \
         free((ht)->nodes);                                                                                             \
     } while (0)\
+
+#endif
