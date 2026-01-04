@@ -215,7 +215,7 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
                 (ht)->capacity *= 2;                                                                                   \
             }                                                                                                          \
             if (!(ht)->nodes) {                                                                                        \
-                (ht)->nodes = malloc((ht)->capacity * sizeof(*(ht)->nodes));                                           \
+                (ht)->nodes = calloc((ht)->capacity, sizeof(*(ht)->nodes));                                            \
             } else {                                                                                                   \
                 sp_ht_rehash((ht), old_capacity);                                                                      \
             }                                                                                                          \
@@ -262,6 +262,7 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
             if (!(ht)->nodes[index].key) { /* empty node (insertion) */                                                \
                 (ht)->nodes[index].key = malloc(strlen((expected_key)) + 1);                                           \
                 strncpy((ht)->nodes[index].key, (expected_key), strlen((expected_key)));                               \
+                (ht)->nodes[index].key[strlen((expected_key))] = '\0';                                                 \
                 (ht)->nodes[index].value = element;                                                                    \
                 ++(ht)->count;                                                                                         \
                 break;                                                                                                 \
@@ -295,10 +296,11 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
     do {                                                                                                               \
         for (size_t i = 0; i < (ht)->capacity; ++i) {                                                                  \
             printf("%ld: ", i);                                                                                        \
-            if ((ht)->nodes[i].key) {                                                                                  \
-                printf("\"%s\" -> %c\n", (ht)->nodes[i].key, (ht)->nodes[i].value);                                    \
-            } else {                                                                                                   \
+            if (!(ht)->nodes[i].key) {                                                                                 \
                 putchar('\n');                                                                                         \
+                continue;                                                                                              \
+            } else {                                                                                                   \
+                printf("\"%s\" -> %c\n", (ht)->nodes[i].key, (ht)->nodes[i].value);                                    \
             }                                                                                                          \
         }                                                                                                              \
     } while (0)
@@ -312,6 +314,6 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
             free((ht)->nodes[i].key);                                                                                  \
         }                                                                                                              \
         free((ht)->nodes);                                                                                             \
-    } while (0)\
+    } while (0)
 
 #endif
