@@ -21,14 +21,16 @@
         size_t capacity;                                                                                               \
     }
 
+// TODO: Generalize reserve operation into a common backend (related sp_ht_reserve)
 #define SP_DA_INIT_CAP 16
-#define sp_da_reserve(da, expected)                                                                                    \
+#define sp_da_reserve(da, __expected__)                                                                                \
     do {                                                                                                               \
-        if ((da)->capacity < ((size_t) (expected))) {                                                                  \
+        size_t expected = (__expected__);                                                                              \
+        if ((da)->capacity < expected) {                                                                               \
             if ((da)->capacity == 0) {                                                                                 \
                 (da)->capacity = SP_DA_INIT_CAP;                                                                       \
             }                                                                                                          \
-            while ((da)->capacity < ((size_t) (expected))) {                                                           \
+            while ((da)->capacity < expected) {                                                                        \
                 (da)->capacity *= 2;                                                                                   \
             }                                                                                                          \
             (da)->data = realloc((da)->data, (da)->capacity * sizeof(*(da)->data));                                    \
@@ -204,15 +206,15 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
 
 #define SP_HT_INIT_CAP 16
 #define SP_HT_LOAD_CAPACITY 0.75
-#define sp_ht_reserve(ht, expected)                                                                                    \
+#define sp_ht_reserve(ht, __expected__)                                                                                \
     do {                                                                                                               \
-        if ((ht)->capacity < (expected)) {                                                                             \
+        size_t expected = (__expected__);                                                                              \
+        if ((ht)->capacity < expected) {                                                                               \
             if ((ht)->capacity == 0) {                                                                                 \
                 (ht)->capacity = SP_HT_INIT_CAP;                                                                       \
             }                                                                                                          \
             size_t old_capacity = (ht)->capacity;                                                                      \
-            double goal         = (double) (expected);                                                                 \
-            while ((ht)->capacity < (size_t) (SP_HT_LOAD_CAPACITY * goal)) {                                           \
+            while ((ht)->capacity < (size_t) (SP_HT_LOAD_CAPACITY * (double) expected)) {                              \
                 (ht)->capacity *= 2;                                                                                   \
             }                                                                                                          \
             if (!(ht)->nodes) {                                                                                        \
