@@ -54,7 +54,7 @@
 #define sp_da_free(da)                                                                                                 \
     do {                                                                                                               \
         free((da)->data);                                                                                              \
-        (da)->count = 0;                                                                                               \
+        (da)->count    = 0;                                                                                            \
         (da)->capacity = 0;                                                                                            \
     } while (0)
 
@@ -99,28 +99,28 @@ __attribute__((format(printf, 2, 3))) int sp_sb_appendf(Sp_String_Builder* sb, c
 #define sp_ll_push_back(ll, element)                                                                                   \
     do {                                                                                                               \
         if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */                                      \
-            (ll)->head = malloc(sizeof(*(ll)->head));                                                                  \
+            (ll)->head       = malloc(sizeof(*(ll)->head));                                                            \
             (ll)->head->data = element;                                                                                \
-            (ll)->tail = (ll)->head;                                                                                   \
+            (ll)->tail       = (ll)->head;                                                                             \
         } else {                                                                                                       \
-            (ll)->tail->next = malloc(sizeof(*(ll)->tail));                                                            \
+            (ll)->tail->next       = malloc(sizeof(*(ll)->tail));                                                      \
             (ll)->tail->next->prev = (ll)->tail;                                                                       \
-            (ll)->tail = (ll)->tail->next;                                                                             \
-            (ll)->tail->data = element;                                                                                \
+            (ll)->tail             = (ll)->tail->next;                                                                 \
+            (ll)->tail->data       = element;                                                                          \
         }                                                                                                              \
     } while (0)
 
 #define sp_ll_push_front(ll, element)                                                                                  \
     do {                                                                                                               \
         if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */                                      \
-            (ll)->head = malloc(sizeof(*(ll)->head));                                                                  \
+            (ll)->head       = malloc(sizeof(*(ll)->head));                                                            \
             (ll)->head->data = element;                                                                                \
-            (ll)->tail = (ll)->head;                                                                                   \
+            (ll)->tail       = (ll)->head;                                                                             \
         } else {                                                                                                       \
-            (ll)->head->prev = malloc(sizeof(*(ll)->tail));                                                            \
+            (ll)->head->prev       = malloc(sizeof(*(ll)->tail));                                                      \
             (ll)->head->prev->next = (ll)->head;                                                                       \
-            (ll)->head = (ll)->head->prev;                                                                             \
-            (ll)->head->data = element;                                                                                \
+            (ll)->head             = (ll)->head->prev;                                                                 \
+            (ll)->head->data       = element;                                                                          \
         }                                                                                                              \
     } while (0)
 
@@ -225,7 +225,7 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
 #define sp_ht_rehash(ht, old_capacity)                                                                                 \
     do {                                                                                                               \
         sp_ht_node_ptr((ht)) old_nodes = (ht)->nodes;                                                                  \
-        (ht)->nodes = malloc((ht)->capacity * sizeof(*(ht)->nodes));                                                   \
+        (ht)->nodes                    = malloc((ht)->capacity * sizeof(*(ht)->nodes));                                \
         for (size_t i = 0; i < old_capacity; ++i) {                                                                    \
             if (!old_nodes[i].key) {                                                                                   \
                 continue;                                                                                              \
@@ -251,6 +251,7 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
             } else if (strcmp((ht)->nodes[index].key, (expected_key)) == 0) {                                          \
                 break;                                                                                                 \
             }                                                                                                          \
+            ++index;                                                                                                   \
         }                                                                                                              \
         index;                                                                                                         \
     })
@@ -263,7 +264,7 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
                 (ht)->nodes[index].key = malloc(strlen((expected_key)) + 1);                                           \
                 strncpy((ht)->nodes[index].key, (expected_key), strlen((expected_key)));                               \
                 (ht)->nodes[index].key[strlen((expected_key))] = '\0';                                                 \
-                (ht)->nodes[index].value = element;                                                                    \
+                (ht)->nodes[index].value                       = element;                                              \
                 ++(ht)->count;                                                                                         \
                 break;                                                                                                 \
             } else if (strcmp((ht)->nodes[index].key, (expected_key)) == 0) { /* existing node w/ key (replacement) */ \
