@@ -289,15 +289,13 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
 /*
  * WARNING: Uses non-standard statement expressions, which may not be supported by all C compilers.
  *
- * Returns an `sp_ht_node_ptr(ht)`, or a pointer to the node of the value of `expected_key`, or an empty node if none
- * was found.
- *
- * ERRORS
- * If open addressing collision resolution cannot find an empty node, a null pointer will be returned. This most likely
- * means the hash table should be grown.
+ * Returns an `sp_ht_node_ptr(ht)`, or a pointer to the node of the value of `expected_key`, or NULL if not found.
  */
 #define sp_ht_get(ht, expected_key)                                                                                    \
-    ((sp_ht_hash((ht), (expected_key)) != (ht)->capacity ? &(ht)->nodes[sp_ht_hash((ht), (expected_key))] : NULL))
+    (sp_ht_hash((ht), (expected_key)) != (ht)->capacity                                                                \
+         ? ((ht)->nodes[sp_ht_hash((ht), (expected_key))].key ? &((ht)->nodes[sp_ht_hash((ht), (expected_key))])       \
+                                                              : NULL)                                                  \
+         : NULL)
 
 /*
  * TODO: FOR DEBUGGING PURPOSES ONLY, REMOVE LATER MOST LIKELY
