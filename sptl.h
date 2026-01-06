@@ -25,7 +25,7 @@
 #define SP_DA_INIT_CAP 16
 #define sp_da_reserve(da, __expected__)                                                                                \
     do {                                                                                                               \
-        size_t expected = (__expected__);                                                                              \
+        const size_t expected = (__expected__);                                                                              \
         if ((da)->capacity < expected) {                                                                               \
             if ((da)->capacity == 0) {                                                                                 \
                 (da)->capacity = SP_DA_INIT_CAP;                                                                       \
@@ -185,6 +185,8 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
     return hash;
 }
 
+// size_t hash_to_idx(const char* key, size_t capacity) {}
+
 /*
  * Hash table implementation with open addressing collision resolution.
  *
@@ -208,7 +210,7 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
 #define SP_HT_LOAD_CAPACITY 0.75
 #define sp_ht_reserve(ht, __expected__)                                                                                \
     do {                                                                                                               \
-        size_t expected = (__expected__);                                                                              \
+        const size_t expected = (__expected__);                                                                              \
         if ((ht)->capacity < expected) {                                                                               \
             if ((ht)->capacity == 0) {                                                                                 \
                 (ht)->capacity = SP_HT_INIT_CAP;                                                                       \
@@ -308,7 +310,7 @@ uint32_t hash_fnv(const char* data, const size_t bytes) {
                 putchar('\n');                                                                                         \
                 continue;                                                                                              \
             } else {                                                                                                   \
-                printf("\"%s\" -> %c\n", (ht)->nodes[i].key, (ht)->nodes[i].value);                                    \
+                printf("\"%s\" -> %d\n", (ht)->nodes[i].key, (ht)->nodes[i].value);                                    \
             }                                                                                                          \
         }                                                                                                              \
     } while (0)
