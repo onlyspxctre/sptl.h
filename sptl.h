@@ -49,7 +49,7 @@
  */
 #define sp_da_clear(da)                                                                                                \
     do {                                                                                                               \
-        memset((da)->data, 0, (da)->count);                                                                            \
+        memset((da)->data, 0, (da)->capacity * sizeof(*(da)->data));                                                                            \
         (da)->count = 0;                                                                                               \
     } while (0)
 
