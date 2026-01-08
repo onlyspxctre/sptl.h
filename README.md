@@ -15,6 +15,11 @@ Recreational header-only library for simple implementations of common utils and 
     - Dynamic Array
     - Linked List
     - Hash Table
+- Logging system w/ multiple log levels
+    - Prefixed with `[LOG_LEVEL]`
+    - Info is printed to `stdout`, warnings & errors are printed to `stderr`
+    - Automatically newlined
+    - Verbose logs with `-DSP_VERBOSE_LOGS` and the `SP_VERBOSE` log level
 
 ## References
 
