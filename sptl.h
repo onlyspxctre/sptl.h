@@ -43,7 +43,7 @@ typedef enum {
 
 __attribute__((format(printf, 2, 3))) static int sp_log(Sp_Log_Level log_level, const char* format, ...) {
     va_list arg;
-    FILE* fd;
+    FILE *fd;
 
     switch (log_level) {
         case SP_INFO:
@@ -80,7 +80,7 @@ __attribute__((format(printf, 2, 3))) static int sp_log(Sp_Log_Level log_level, 
  */
 #define Sp_Dynamic_Array(T)                                                                                            \
     typedef struct {                                                                                                   \
-        T* data;                                                                                                       \
+        T *data;                                                                                                       \
         size_t count;                                                                                                  \
         size_t capacity;                                                                                               \
     }
@@ -148,7 +148,7 @@ __attribute__((format(printf, 2, 3))) static int sp_sb_appendf(Sp_String_Builder
 
     sp_da_reserve(sb, sb->count + (size_t) count + 1); // allocate enough room for null terminator to
 
-    char* dest = sb->data + sb->count;
+    char *dest = sb->data + sb->count;
     va_start(arg, format);
     vsnprintf(dest, (size_t) count + 1, format, arg);
     va_end(arg);
@@ -157,6 +157,39 @@ __attribute__((format(printf, 2, 3))) static int sp_sb_appendf(Sp_String_Builder
 
     return count;
 }
+
+#define Sp_Queue(T)                                                                                                    \
+    typedef struct {                                                                                                   \
+        T *data;                                                                                                       \
+        size_t count;                                                                                                  \
+        size_t head;                                                                                                   \
+        size_t tail;                                                                                                   \
+        size_t capacity;                                                                                               \
+    }
+
+#define SP_QUEUE_INIT_CAP SP_DA_INIT_CAP
+#define sp_queue_reserve(queue, __expected__)                                                                          \
+    do {                                                                                                               \
+        const size_t expected = (__expected__);                                                                        \
+        size_t capacity = (queue)->capacity;                                                                           \
+        if (capacity < expected) {                                                                                     \
+            if (capacity == 0) {                                                                                       \
+                (queue)->capacity = SP_QUEUE_INIT_CAP;                                                                 \
+            }                                                                                                          \
+            while (capacity < expected) {                                                                              \
+                capacity *= 2;                                                                                         \
+            }                                                                                                          \
+            __typeof__((da)->data) *data = malloc(capacity * sizeof(*(queue)->data));                                  \
+            for (size_t i = 0; i < (queue)->capacity; ++i) {                                                           \
+                data[i] = (queue)->data[((queue)->head + i) % (queue)->capacity];                                      \
+            }                                                                                                          \
+            free((da)->data);                                                                                          \
+            (da)->data = data;                                                                                         \
+            (da)->head = 0;                                                                                            \
+            (da)->tail = (da)->count;                                                                                  \
+            (da)->capacity = capacity;                                                                                 \
+        }                                                                                                              \
+    } while (0)
 
 #define Sp_Linked_List(T)                                                                                              \
     struct CONCAT(Sp_Internal_Node, __LINE__) {                                                                        \
@@ -231,7 +264,7 @@ __attribute__((format(printf, 2, 3))) static int sp_sb_appendf(Sp_String_Builder
 
 #define sp_ll_free(ll)                                                                                                 \
     do {                                                                                                               \
-        void* next;                                                                                                    \
+        void *next;                                                                                                    \
         while ((ll)->head) {                                                                                           \
             next = (ll)->head->next;                                                                                   \
             free((ll)->head);                                                                                          \
@@ -266,7 +299,7 @@ static uint32_t hash_fnv(const char* data, const size_t bytes) {
  */
 #define Sp_Hash_Table(T)                                                                                               \
     struct CONCAT(Sp_Hash_Table_Node, __LINE__) {                                                                      \
-        char* key;                                                                                                     \
+        char *key;                                                                                                     \
         T value;                                                                                                       \
     };                                                                                                                 \
     typedef struct {                                                                                                   \
