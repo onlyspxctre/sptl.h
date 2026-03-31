@@ -1,27 +1,32 @@
 #include "sptl.h"
+#include <cmocka.h>
 
-Sp_Hash_Table(char) HT_Char;
+Sp_Queue(int) Sp_Queue_Int;
+
+static void sptl_test_queue_push_peek_pop(void **state) {
+    (void) state;
+
+    Sp_Queue_Int queue = {0};
+
+    sp_queue_push(&queue, 1);
+    sp_queue_push(&queue, 2);
+    sp_queue_push(&queue, 3);
+
+    int expected[] = { 1, 2, 3 };
+
+    size_t i = 0;
+    while (queue.count > 0) {
+        assert_true(expected[i++] == sp_queue_peek(&queue));
+        sp_queue_pop(&queue);
+    }
+
+    sp_queue_free(&queue);
+}
+
+static const struct CMUnitTest tests[] = {
+    cmocka_unit_test(sptl_test_queue_push_peek_pop),
+};
 
 int main(void) {
-    HT_Char ht = {0};
-    sp_ht_insert(&ht, "A", (char) 'A');
-    sp_ht_insert(&ht, "A", (char) 'a');
-    sp_ht_insert(&ht, "B", (char) 'B');
-    sp_ht_insert(&ht, "C", (char) 'C');
-    sp_ht_insert(&ht, "D", (char) 'D');
-    sp_ht_insert(&ht, "E", (char) 'E');
-    sp_ht_insert(&ht, "Q", (char) 'Q');
-
-    sp_ht_reserve(&ht, 32);
-
-    sp_ht_print(&ht);
-
-    sp_ht_node_ptr(&ht) ptr = sp_ht_get(&ht, "C");
-    printf("%c\n", ptr->value);
-    ptr = sp_ht_get(&ht, "D");
-    printf("%c\n", ptr->value);
-    ptr = sp_ht_get(&ht, "F");
-    printf("%c\n", ptr->value);
-
-    sp_ht_free(&ht);
+    return cmocka_run_group_tests(tests, NULL, NULL);
 }
