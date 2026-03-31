@@ -41,7 +41,7 @@ typedef enum {
     SP_VERBOSE,
 } Sp_Log_Level;
 
-__attribute__((format(printf, 2, 3))) static int sp_log(Sp_Log_Level log_level, const char* format, ...) {
+__attribute__((format(printf, 2, 3))) static int sp_log(Sp_Log_Level log_level, const char *format, ...) {
     va_list arg;
     FILE *fd;
 
@@ -104,13 +104,13 @@ __attribute__((format(printf, 2, 3))) static int sp_log(Sp_Log_Level log_level, 
 #define sp_da_push(da, element)                                                                                        \
     do {                                                                                                               \
         sp_da_reserve((da), (da)->count + 1);                                                                          \
-        (da)->data[(da)->count] = element;                                                                             \
-        ++(da)->count;                                                                                                 \
+        (da)->data[(da)->count++] = element;                                                                           \
     } while (0)
 
 #define sp_da_pop(da)                                                                                                  \
     do {                                                                                                               \
-        --(da)->count;                                                                                                 \
+        if ((da)->count > 0)                                                                                           \
+            --(da)->count;                                                                                             \
         (da)->data[(da)->count] = 0;                                                                                   \
     } while (0)
 
@@ -139,7 +139,7 @@ Sp_Dynamic_Array(char) Sp_String_Builder;
  * Increments `sb->count` by the length of parsed `format` excluding the null terminator, but `sb->data` itself is
  * safe-to-use.
  */
-__attribute__((format(printf, 2, 3))) static int sp_sb_appendf(Sp_String_Builder* sb, const char* format, ...) {
+__attribute__((format(printf, 2, 3))) static int sp_sb_appendf(Sp_String_Builder *sb, const char *format, ...) {
     va_list arg;
 
     va_start(arg, format);
@@ -305,7 +305,7 @@ __attribute__((format(printf, 2, 3))) static int sp_sb_appendf(Sp_String_Builder
 #define FNV_PRIME_32 16777619
 #define FNV_OFFSET_BASIS_32 2166136261
 
-static uint32_t hash_fnv(const char* data, const size_t bytes) {
+static uint32_t hash_fnv(const char *data, const size_t bytes) {
     uint32_t hash = FNV_OFFSET_BASIS_32;
 
     for (size_t i = 0; i < bytes; ++i) {
