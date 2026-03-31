@@ -174,21 +174,47 @@ __attribute__((format(printf, 2, 3))) static int sp_sb_appendf(Sp_String_Builder
         size_t capacity = (queue)->capacity;                                                                           \
         if (capacity < expected) {                                                                                     \
             if (capacity == 0) {                                                                                       \
-                (queue)->capacity = SP_QUEUE_INIT_CAP;                                                                 \
+                capacity = SP_QUEUE_INIT_CAP;                                                                          \
             }                                                                                                          \
             while (capacity < expected) {                                                                              \
                 capacity *= 2;                                                                                         \
             }                                                                                                          \
-            __typeof__((da)->data) *data = malloc(capacity * sizeof(*(queue)->data));                                  \
+            __typeof__((queue)->data) data = malloc(capacity * sizeof(*(queue)->data));                                \
             for (size_t i = 0; i < (queue)->capacity; ++i) {                                                           \
                 data[i] = (queue)->data[((queue)->head + i) % (queue)->capacity];                                      \
             }                                                                                                          \
-            free((da)->data);                                                                                          \
-            (da)->data = data;                                                                                         \
-            (da)->head = 0;                                                                                            \
-            (da)->tail = (da)->count;                                                                                  \
-            (da)->capacity = capacity;                                                                                 \
+            free((queue)->data);                                                                                       \
+            (queue)->data = data;                                                                                      \
+            (queue)->head = 0;                                                                                         \
+            (queue)->tail = (queue)->count;                                                                            \
+            (queue)->capacity = capacity;                                                                              \
         }                                                                                                              \
+    } while (0)
+
+#define sp_queue_push(queue, element)                                                                                  \
+    do {                                                                                                               \
+        sp_queue_reserve((queue), (queue)->count + 1);                                                                 \
+        (queue)->data[(queue)->tail++ % (queue)->capacity] = (element);                                                \
+        ++(queue)->count;                                                                                              \
+    } while (0)
+
+#define sp_queue_pop(queue)                                                                                            \
+    do {                                                                                                               \
+        ++(queue)->head;                                                                                               \
+        if ((queue)->count > 0)                                                                                        \
+            --(queue)->count;                                                                                          \
+    } while (0)
+
+#define sp_queue_peek(queue) (queue)->data[(queue)->head % (queue)->capacity]
+
+#define sp_queue_free(queue)                                                                                           \
+    do {                                                                                                               \
+        free((queue)->data);                                                                                           \
+        (queue)->data = NULL;                                                                                          \
+        (queue)->count = 0;                                                                                            \
+        (queue)->head = 0;                                                                                             \
+        (queue)->tail = 0;                                                                                             \
+        (queue)->capacity = 0;                                                                                         \
     } while (0)
 
 #define Sp_Linked_List(T)                                                                                              \
