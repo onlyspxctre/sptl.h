@@ -205,7 +205,7 @@ __attribute__((format(printf, 2, 3))) static int sp_sb_appendf(Sp_String_Builder
             --(queue)->count;                                                                                          \
     } while (0)
 
-#define sp_queue_peek(queue) (queue)->data[(queue)->head % (queue)->capacity]
+#define sp_queue_peek(queue) ((queue)->count == 0 ? 0 : (queue)->data[(queue)->head % (queue)->capacity])
 
 #define sp_queue_free(queue)                                                                                           \
     do {                                                                                                               \
