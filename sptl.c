@@ -1,12 +1,29 @@
 #include "sptl.h"
 #include <cmocka.h>
 
-Sp_Queue(int) Sp_Queue_Int;
+static void sptl_test_da_pop_overflow(void **state) {
+    (void) state;
 
+    Sp_Dynamic_Array(int) da = {0};
+
+    sp_da_push(&da, 1);
+    sp_da_push(&da, 2);
+    sp_da_push(&da, 3);
+
+    assert_true(da.count == 3);
+
+    for (size_t i = 0; i < 100; ++i) {
+        sp_da_pop(&da);
+    }
+
+    assert_true(da.count == 0);
+
+    sp_da_free(&da);
+}
 static void sptl_test_queue_pop_overflow(void **state) {
     (void) state;
 
-    Sp_Queue_Int queue = {0};
+    Sp_Queue(int) queue = {0};
 
     sp_queue_push(&queue, 1);
     sp_queue_push(&queue, 2);
@@ -27,7 +44,7 @@ static void sptl_test_queue_pop_overflow(void **state) {
 static void sptl_test_queue_push_peek_pop(void **state) {
     (void) state;
 
-    Sp_Queue_Int queue = {0};
+    Sp_Queue(int) queue = {0};
 
     sp_queue_push(&queue, 1);
     sp_queue_push(&queue, 2);
@@ -44,11 +61,12 @@ static void sptl_test_queue_push_peek_pop(void **state) {
     sp_queue_free(&queue);
 }
 
-static const struct CMUnitTest sptl_tests_queue[] = {
+static const struct CMUnitTest sptl_tests[] = {
+    cmocka_unit_test(sptl_test_da_pop_overflow),
     cmocka_unit_test(sptl_test_queue_pop_overflow),
     cmocka_unit_test(sptl_test_queue_push_peek_pop),
 };
 
 int main(void) {
-    return cmocka_run_group_tests(sptl_tests_queue, NULL, NULL);
+    return cmocka_run_group_tests(sptl_tests, NULL, NULL);
 }
