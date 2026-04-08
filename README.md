@@ -21,6 +21,26 @@ Recreational header-only library for simple implementations of common utils and 
     - Automatically newlined
     - Verbose logs with `-DSP_VERBOSE_LOGS` and the `SP_VERBOSE` log level
 
+## Usage
+
+```c
+#include "sptl.h"
+
+int main(void) {
+    Sp_Dynamic_Array(int) da = {0}; // initializes a dynamic array of type int
+
+    sp_da_push(&da, 1);
+    sp_da_push(&da, 2);
+    sp_da_push(&da, 3);
+
+    for (size_t i = 0; i < da.count; ++i) {
+        da.data[i];
+    }
+
+    sp_da_free(&da); // structures must be manually freed
+}
+```
+
 ## References
 
 [nob.h by Tsoding](https://github.com/tsoding/nob.h/), inspiration
