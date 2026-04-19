@@ -1,6 +1,25 @@
 #include "sptl.h"
 #include <cmocka.h>
 
+static void sptl_test_da_resize(void **state) {
+    (void) state;
+
+    Sp_Dynamic_Array(int) da = {0};
+
+    sp_da_reserve(&da, 16);
+    memset(da.data, -1, da.capacity * sizeof(*da.data));
+    sp_da_resize(&da, 6);
+
+    assert_true(da.count == 6);
+    for (size_t i = 0; i < da.capacity; ++i) {
+        if (i < da.count) {
+            assert_true(da.data[i] == 0);
+        }
+        else {
+            assert_true(da.data[i] == -1);
+        }
+    }
+}
 static void sptl_test_da_pop_overflow(void **state) {
     (void) state;
 
@@ -62,7 +81,11 @@ static void sptl_test_queue_push_peek_pop(void **state) {
 }
 
 static const struct CMUnitTest sptl_tests[] = {
+    /* Sp_Dynamic_Array */
+    cmocka_unit_test(sptl_test_da_resize),
     cmocka_unit_test(sptl_test_da_pop_overflow),
+
+    /* Sp_Queue */
     cmocka_unit_test(sptl_test_queue_pop_overflow),
     cmocka_unit_test(sptl_test_queue_push_peek_pop),
 };

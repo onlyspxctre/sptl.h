@@ -41,7 +41,7 @@ typedef enum {
     SP_VERBOSE,
 } Sp_Log_Level;
 
-__attribute__((format(printf, 2, 3))) static int sp_log(Sp_Log_Level log_level, const char *format, ...) {
+__attribute__((format(printf, 2, 3))) static inline int sp_log(Sp_Log_Level log_level, const char *format, ...) {
     va_list arg;
     FILE *fd;
 
@@ -90,16 +90,34 @@ __attribute__((format(printf, 2, 3))) static int sp_log(Sp_Log_Level log_level, 
 #define sp_da_reserve(da, __expected__)                                                                      \
     do {                                                                                                     \
         const size_t expected = (__expected__);                                                              \
-        if ((da)->capacity < expected) {                                                                     \
-            if ((da)->capacity == 0) {                                                                       \
-                (da)->capacity = SP_DA_INIT_CAP;                                                             \
+        size_t capacity = (da)->capacity;                                                                    \
+        if (capacity < expected) {                                                                           \
+            if (capacity == 0) {                                                                             \
+                capacity = SP_DA_INIT_CAP;                                                                   \
             }                                                                                                \
-            while ((da)->capacity < expected) {                                                              \
-                (da)->capacity *= 2;                                                                         \
+            while (capacity < expected) {                                                                    \
+                 capacity *= 2;                                                                              \
             }                                                                                                \
-            (da)->data = (__typeof__((da)->data)) realloc((da)->data, (da)->capacity * sizeof(*(da)->data)); \
+            __typeof__((da)->data) data =                                                                    \
+                (__typeof__((da)->data)) malloc(capacity * sizeof(*(da)->data));                             \
+            memcpy(data, (da)->data, (da)->capacity * sizeof(*(da)->data));                                  \
+            free((da)->data);                                                                                \
+            (da)->data = data;                                                                               \
+            (da)->capacity = capacity;                                                                       \
         }                                                                                                    \
     } while (0)
+
+#define sp_da_resize(da, __count__)                                                                       \
+    do {\
+        size_t count = (__count__);\
+        if (count > (da)->capacity) {\
+            sp_da_reserve((da), count);\
+        }\
+        if (count > (da)->count) {\
+            memset((da)->data + (da)->count, 0, (count - (da)->count) * sizeof(*(da)->data));\
+        }\
+        (da)->count = count;\
+    } while (0)\
 
 #define sp_da_push(da, element)                                                                              \
     do {                                                                                                     \
@@ -139,7 +157,7 @@ typedef Sp_Dynamic_Array(char) Sp_String_Builder;
  * Increments `sb->count` by the length of parsed `format` excluding the null terminator, but `sb->data`
  * itself is safe-to-use.
  */
-__attribute__((format(printf, 2, 3))) static int sp_sb_appendf(Sp_String_Builder *sb, const char *format,
+__attribute__((format(printf, 2, 3))) static inline int sp_sb_appendf(Sp_String_Builder *sb, const char *format,
                                                                ...) {
     va_list arg;
 
@@ -181,7 +199,7 @@ __attribute__((format(printf, 2, 3))) static int sp_sb_appendf(Sp_String_Builder
                 capacity *= 2;                                                                               \
             }                                                                                                \
             __typeof__((queue)->data) data =                                                                 \
-                (__typeof__((queue)->data)) malloc(capacity * sizeof(*(queue)->data));                       \
+                (__typeof__((queue)->data)) calloc(capacity, sizeof(*(queue)->data));                        \
             for (size_t i = 0; i < (queue)->capacity; ++i) {                                                 \
                 data[i] = (queue)->data[((queue)->head + i) % (queue)->capacity];                            \
             }                                                                                                \
@@ -307,7 +325,7 @@ __attribute__((format(printf, 2, 3))) static int sp_sb_appendf(Sp_String_Builder
 #define FNV_PRIME_32 16777619
 #define FNV_OFFSET_BASIS_32 2166136261
 
-static uint32_t hash_fnv(const char *data, const size_t bytes) {
+static inline uint32_t hash_fnv(const char *data, const size_t bytes) {
     uint32_t hash = FNV_OFFSET_BASIS_32;
 
     for (size_t i = 0; i < bytes; ++i) {
