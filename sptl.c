@@ -14,8 +14,7 @@ static void sptl_test_da_resize(void **state) {
     for (size_t i = 0; i < da.capacity; ++i) {
         if (i < da.count) {
             assert_true(da.data[i] == 0);
-        }
-        else {
+        } else {
             assert_true(da.data[i] == -1);
         }
     }
@@ -69,7 +68,7 @@ static void sptl_test_queue_push_peek_pop(void **state) {
     sp_queue_push(&queue, 2);
     sp_queue_push(&queue, 3);
 
-    int expected[] = { 1, 2, 3 };
+    int expected[] = {1, 2, 3};
 
     size_t i = 0;
     while (queue.count > 0) {
@@ -90,6 +89,4 @@ static const struct CMUnitTest sptl_tests[] = {
     cmocka_unit_test(sptl_test_queue_push_peek_pop),
 };
 
-int main(void) {
-    return cmocka_run_group_tests(sptl_tests, NULL, NULL);
-}
+int main(void) { return cmocka_run_group_tests(sptl_tests, NULL, NULL); }
