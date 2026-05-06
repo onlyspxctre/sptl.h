@@ -46,18 +46,18 @@ static void sptl_test_ll_push_pop_back(void **state) {
     Sp_Linked_List(int) ll = {0};
 
     sp_ll_push_back(&ll, 1);
-    assert_true(*(int*) ll.head->data == 1);
-    assert_true(*(int*) ll.tail->data == 1);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 1);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 1);
 
     sp_ll_push_back(&ll, 2);
-
     assert_true(*(int*) ll.head->data == 1);
     assert_true(*(int*) ll.tail->data == 2);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 1);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 2);
 
     sp_ll_push_back(&ll, 3);
-
-    assert_true(*(int*) ll.head->data == 1);
-    assert_true(*(int*) ll.tail->data == 3);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 1);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 3);
 
     sp_ll_pop_back(&ll);
     sp_ll_pop_back(&ll);
@@ -74,27 +74,24 @@ static void sptl_test_ll_push_pop_front(void **state) {
     Sp_Linked_List(int) ll = {0};
 
     sp_ll_push_back(&ll, 1);
-    assert_true(*(int*) ll.head->data == 1);
-    assert_true(*(int*) ll.tail->data == 1);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 1);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 1);
 
     sp_ll_push_back(&ll, 2);
-
-    assert_true(*(int*) ll.head->data == 1);
-    assert_true(*(int*) ll.tail->data == 2);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 1);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 2);
 
     sp_ll_push_back(&ll, 3);
-
-    assert_true(*(int*) ll.head->data == 1);
-    assert_true(*(int*) ll.tail->data == 3);
-
-    sp_ll_pop_front(&ll);
-    assert_true(*(int*) ll.head->data == 2);
-    assert_true(*(int*) ll.tail->data == 3);
-
+    assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 1);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 3);
 
     sp_ll_pop_front(&ll);
-    assert_true(*(int*) ll.head->data == 3);
-    assert_true(*(int*) ll.tail->data == 3);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 2);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 3);
+
+    sp_ll_pop_front(&ll);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 3);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 3);
 
     sp_ll_pop_front(&ll);
     assert_true(ll.head == NULL);

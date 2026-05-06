@@ -242,22 +242,27 @@ typedef struct sp_ll_node {
 
 #define Sp_Linked_List(T)                                                                                              \
     struct {                                                                                                           \
-        T id;                                                                                                          \
+        T type;                                                                                                        \
         sp_ll_node *head;                                                                                              \
         sp_ll_node *tail;                                                                                              \
     }
 
+/* Returns the type of the underlying data stored within the Sp_Linked_List. */
+#define sp_ll_type(ll) __typeof__((ll)->type)
+/* Returns a pointer of `sp_ll_type(ll)` to the underlying data stored at `sp_ll_node* node`. */
+#define sp_ll_node_unwrap(ll, node) ((sp_ll_type(ll)*) (node)->data)
+
 #define sp_ll_push_back(ll, element)                                                                                   \
     do {                                                                                                               \
         if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */                                      \
-            (ll)->head = malloc(sizeof(*(ll)->head) + sizeof((ll)->id));                                               \
-            *(__typeof__(element)*)(ll)->head->data = (element);                                                       \
+            (ll)->head = malloc(sizeof(*(ll)->head) + sizeof((ll)->type));                                             \
+            *sp_ll_node_unwrap(ll, (ll)->head) = (element);                                                          \
             (ll)->tail = (ll)->head;                                                                                   \
         } else {                                                                                                       \
-            (ll)->tail->next = malloc(sizeof(*(ll)->tail) + sizeof((ll)->id));                                         \
+            (ll)->tail->next = malloc(sizeof(*(ll)->tail) + sizeof((ll)->type));                                       \
             (ll)->tail->next->prev = (ll)->tail;                                                                       \
             (ll)->tail = (ll)->tail->next;                                                                             \
-            *(__typeof__(element)*)(ll)->tail->data = (element);                                                       \
+            *sp_ll_node_unwrap(ll, (ll)->tail) = (element);                                                          \
         }                                                                                                              \
     } while (0)
 
@@ -318,8 +323,6 @@ typedef struct sp_ll_node {
         (ll)->head = NULL;                                                                                             \
         (ll)->tail = NULL;                                                                                             \
     } while (0)
-
-#define sp_ll_node_ptr(ll) (__typeof__((ll)->head))
 
 #define FNV_PRIME_32 16777619
 #define FNV_OFFSET_BASIS_32 2166136261
