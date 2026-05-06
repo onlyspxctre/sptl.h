@@ -256,27 +256,27 @@ typedef struct sp_ll_node {
     do {                                                                                                               \
         if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */                                      \
             (ll)->head = malloc(sizeof(*(ll)->head) + sizeof((ll)->type));                                             \
-            *sp_ll_node_unwrap(ll, (ll)->head) = (element);                                                          \
+            *sp_ll_node_unwrap(ll, (ll)->head) = (element);                                                            \
             (ll)->tail = (ll)->head;                                                                                   \
         } else {                                                                                                       \
             (ll)->tail->next = malloc(sizeof(*(ll)->tail) + sizeof((ll)->type));                                       \
             (ll)->tail->next->prev = (ll)->tail;                                                                       \
             (ll)->tail = (ll)->tail->next;                                                                             \
-            *sp_ll_node_unwrap(ll, (ll)->tail) = (element);                                                          \
+            *sp_ll_node_unwrap(ll, (ll)->tail) = (element);                                                            \
         }                                                                                                              \
     } while (0)
 
 #define sp_ll_push_front(ll, element)                                                                                  \
     do {                                                                                                               \
         if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */                                      \
-            (ll)->head = malloc(sizeof(*(ll)->head));                                                                  \
-            (ll)->head->data = element;                                                                                \
+            (ll)->head = malloc(sizeof(*(ll)->head) + sizeof((ll)->type);                                              \
+            *sp_ll_node_unwrap(ll, (ll)->head) = (element);                                                            \
             (ll)->tail = (ll)->head;                                                                                   \
         } else {                                                                                                       \
-            (ll)->head->prev = malloc(sizeof(*(ll)->tail));                                                            \
+            (ll)->head->prev = malloc(sizeof(*(ll)->tail) + sizeof((ll)->type);                                        \
             (ll)->head->prev->next = (ll)->head;                                                                       \
             (ll)->head = (ll)->head->prev;                                                                             \
-            (ll)->head->data = element;                                                                                \
+            *sp_ll_node_unwrap(ll, (ll)->head) = (element);                                                            \
         }                                                                                                              \
     } while (0)
 
