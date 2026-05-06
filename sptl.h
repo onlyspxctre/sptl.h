@@ -175,6 +175,17 @@ __attribute__((format(printf, 2, 3))) static inline int sp_sb_appendf(Sp_String_
     return count;
 }
 
+static inline Sp_String_Builder sp_cstr_to_sb(const char* cstr) {
+    Sp_String_Builder sb = {0};
+    sp_sb_appendf(&sb, "%s", cstr);
+    return sb;
+}
+
+
+static inline const char *sp_sb_cstr(Sp_String_Builder* sb) {
+    return sb->data;
+}
+
 #define Sp_Queue(T)                                                                                                    \
     struct {                                                                                                           \
         T *data;                                                                                                       \
