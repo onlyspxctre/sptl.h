@@ -172,6 +172,41 @@ static void sptl_test_ht_insert(void **state) {
     sp_ht_free(&ht);
 }
 
+static void sptl_test_ht_rehash(void **state) {
+    (void) state;
+
+    Sp_Hash_Table(int) ht = {0};
+    sp_ht_node_ptr(&ht) ptr = NULL;
+
+    sp_ht_insert(&ht, "Alpha", 1);
+    sp_ht_insert(&ht, "Beta", 2);
+    sp_ht_insert(&ht, "Sigma", 3);
+    sp_ht_insert(&ht, "Omega", 4);
+
+    assert_true(ht.count == 4);
+
+    ht.capacity *= 2;
+    sp_ht_rehash(&ht, ht.capacity / 2);
+
+    ptr = sp_ht_get(&ht, "Alpha");
+    assert_true(ptr != NULL);
+    assert_true(ptr->value == 1);
+
+    ptr = sp_ht_get(&ht, "Beta");
+    assert_true(ptr != NULL);
+    assert_true(ptr->value == 2);
+
+    ptr = sp_ht_get(&ht, "Sigma");
+    assert_true(ptr != NULL);
+    assert_true(ptr->value == 3);
+
+    ptr = sp_ht_get(&ht, "Omega");
+    assert_true(ptr != NULL);
+    assert_true(ptr->value == 4);
+
+    sp_ht_free(&ht);
+}
+
 static const struct CMUnitTest sptl_tests[] = {
     /* Sp_Dynamic_Array */
     cmocka_unit_test(sptl_test_da_resize),
@@ -187,6 +222,7 @@ static const struct CMUnitTest sptl_tests[] = {
 
     /* Sp_Hash_Table */
     cmocka_unit_test(sptl_test_ht_insert),
+    cmocka_unit_test(sptl_test_ht_rehash),
 };
 
 int main(void) { return cmocka_run_group_tests(sptl_tests, NULL, NULL); }
