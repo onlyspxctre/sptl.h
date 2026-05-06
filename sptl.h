@@ -389,11 +389,12 @@ static inline uint32_t hash_fnv(const char *data, const size_t bytes) {
         }                                                                                                              \
     } while (0)
 
-#define sp_ht_rehash(ht, old_capacity)                                                                                 \
+#define sp_ht_rehash(ht, __old_capacity__)                                                                             \
     do {                                                                                                               \
+        size_t CONCAT(old_capacity, __LINE__) = __old_capacity__;                                                      \
         sp_ht_node_ptr((ht)) old_nodes = (ht)->nodes;                                                                  \
         (ht)->nodes = calloc((ht)->capacity, sizeof(*(ht)->nodes));                                                    \
-        for (size_t i = 0; i < old_capacity; ++i) {                                                                    \
+        for (size_t i = 0; i < CONCAT(old_capacity, __LINE__); ++i) {                                                  \
             if (!old_nodes[i].key) {                                                                                   \
                 continue;                                                                                              \
             }                                                                                                          \
