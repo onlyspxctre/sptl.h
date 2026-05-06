@@ -234,28 +234,30 @@ __attribute__((format(printf, 2, 3))) static inline int sp_sb_appendf(Sp_String_
         (queue)->capacity = 0;                                                                                         \
     } while (0)
 
+typedef struct sp_ll_node {
+    struct sp_ll_node *prev;
+    struct sp_ll_node *next;
+    char data[];
+} sp_ll_node;
+
 #define Sp_Linked_List(T)                                                                                              \
-    struct CONCAT(Sp_Internal_Node, __LINE__) {                                                                        \
-        T data;                                                                                                        \
-        struct CONCAT(Sp_Internal_Node, __LINE__) * prev;                                                              \
-        struct CONCAT(Sp_Internal_Node, __LINE__) * next;                                                              \
-    };                                                                                                                 \
-    typedef struct {                                                                                                   \
-        struct CONCAT(Sp_Internal_Node, __LINE__) * head;                                                              \
-        struct CONCAT(Sp_Internal_Node, __LINE__) * tail;                                                              \
+    struct {                                                                                                           \
+        T id;                                                                                                          \
+        sp_ll_node *head;                                                                                              \
+        sp_ll_node *tail;                                                                                              \
     }
 
 #define sp_ll_push_back(ll, element)                                                                                   \
     do {                                                                                                               \
         if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */                                      \
-            (ll)->head = malloc(sizeof(*(ll)->head));                                                                  \
-            (ll)->head->data = element;                                                                                \
+            (ll)->head = malloc(sizeof(*(ll)->head) + sizeof((ll)->id));                                               \
+            *(__typeof__(element)*)(ll)->head->data = (element);                                                       \
             (ll)->tail = (ll)->head;                                                                                   \
         } else {                                                                                                       \
-            (ll)->tail->next = malloc(sizeof(*(ll)->tail));                                                            \
+            (ll)->tail->next = malloc(sizeof(*(ll)->tail) + sizeof((ll)->id));                                         \
             (ll)->tail->next->prev = (ll)->tail;                                                                       \
             (ll)->tail = (ll)->tail->next;                                                                             \
-            (ll)->tail->data = element;                                                                                \
+            *(__typeof__(element)*)(ll)->tail->data = (element);                                                       \
         }                                                                                                              \
     } while (0)
 
