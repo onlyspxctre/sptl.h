@@ -1,2 +1,9 @@
+.PHONY: all clean
+
+CC := clang
+CFLAGS := -Wall -Wextra -std=c99 -pedantic -g
+
+LIBS := -lcmocka
+
 build:
-	clang -Wall -Wextra -std=c99 -pedantic -g -o sptl sptl.c -lcmocka
+	$(CC) $(CFLAGS) -o sptl sptl.c $(LIBS)

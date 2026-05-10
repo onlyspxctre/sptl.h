@@ -225,4 +225,6 @@ static const struct CMUnitTest sptl_tests[] = {
     cmocka_unit_test(sptl_test_ht_rehash),
 };
 
-int main(void) { return cmocka_run_group_tests(sptl_tests, NULL, NULL); }
+int main(void) {
+    return cmocka_run_group_tests(sptl_tests, NULL, NULL);
+}
