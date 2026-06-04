@@ -148,9 +148,7 @@ __attribute__((format(printf, 2, 3))) static inline int sp_log(Sp_Log_Level log_
 #define sp_da_free(da)                                                                                                 \
     do {                                                                                                               \
         free((da)->data);                                                                                              \
-        (da)->data = NULL;                                                                                             \
-        (da)->count = 0;                                                                                               \
-        (da)->capacity = 0;                                                                                            \
+        memset((da), 0, sizeof(*(da)));                                                                                 \
     } while (0)
 
 typedef Sp_Dynamic_Array(char) Sp_String_Builder;
@@ -240,11 +238,7 @@ static inline const char *sp_sb_cstr(Sp_String_Builder *sb) { return sb->data; }
 #define sp_queue_free(queue)                                                                                           \
     do {                                                                                                               \
         free((queue)->data);                                                                                           \
-        (queue)->data = NULL;                                                                                          \
-        (queue)->count = 0;                                                                                            \
-        (queue)->head = 0;                                                                                             \
-        (queue)->tail = 0;                                                                                             \
-        (queue)->capacity = 0;                                                                                         \
+        memset((queue), 0, sizeof(*(queue)));                                                                           \
     } while (0)
 
 typedef struct sp_ll_node {
@@ -426,7 +420,7 @@ static inline uint32_t sp_ht_streq(const void *s1, const void *s2) {
         }                                                                                                              \
     } while (0)
 
-#define sp_ht_push(ht, __key__, __value__)                                                                             \
+#define sp_ht_insert(ht, __key__, __value__)                                                                           \
     do {                                                                                                               \
         if ((ht)->table.capacity == 0) {                                                                               \
             sp_ht_reserve((ht), SP_HT_INIT_CAP);                                                                       \
@@ -436,6 +430,15 @@ static inline uint32_t sp_ht_streq(const void *s1, const void *s2) {
         size_t macro_var(idx) = (ht)->hash(__key__, strlen(__key__)) % (ht)->table.capacity;                           \
         sp_da_push(&(ht)->table.data[macro_var(idx)], ((sp_ht_node_t(ht)) {.key = __key__, .value = __value__}));      \
         ++(ht)->count;                                                                                                 \
+    } while (0)
+
+#define sp_ht_free(ht)                                                                                                 \
+    do {                                                                                                               \
+        for (size_t macro_var(i) = 0; macro_var(i) < (ht)->table.count; ++macro_var(i)) {                              \
+            sp_da_free(&(ht)->table.data[macro_var(i)]);                                                               \
+        }                                                                                                              \
+        sp_da_free(&(ht)->table);                                                                                      \
+        memset((ht), 0, sizeof(*(ht)));                                                                                \
     } while (0)
 
 #endif

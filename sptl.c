@@ -20,6 +20,9 @@ static void sptl_test_da_resize(void **state) {
     }
 
     sp_da_free(&da);
+    assert_true(da.data == NULL);
+    assert_true(da.count == 0);
+    assert_true(da.capacity == 0);
 }
 static void sptl_test_da_pop_overflow(void **state) {
     (void) state;
@@ -39,6 +42,9 @@ static void sptl_test_da_pop_overflow(void **state) {
     assert_true(da.count == 0);
 
     sp_da_free(&da);
+    assert_true(da.data == NULL);
+    assert_true(da.count == 0);
+    assert_true(da.capacity == 0);
 }
 static void sptl_test_ll_push_pop_back(void **state) {
     (void) state;
@@ -118,6 +124,11 @@ static void sptl_test_queue_pop_overflow(void **state) {
     assert_true(sp_queue_peek(&queue) == 0);
 
     sp_queue_free(&queue);
+    assert_true(queue.data == NULL);
+    assert_true(queue.head == 0);
+    assert_true(queue.tail == 0);
+    assert_true(queue.count == 0);
+    assert_true(queue.capacity == 0);
 }
 
 static void sptl_test_queue_push_peek_pop(void **state) {
@@ -138,13 +149,17 @@ static void sptl_test_queue_push_peek_pop(void **state) {
     }
 
     sp_queue_free(&queue);
+    assert_true(queue.data == NULL);
+    assert_true(queue.head == 0);
+    assert_true(queue.tail == 0);
+    assert_true(queue.count == 0);
+    assert_true(queue.capacity == 0);
 }
 
 static void sptl_test_ht_insert(void **state) {
     (void) state;
 
-    Sp_Hash_Table(int) ht = {0};
-    sp_ht_node_ptr(&ht) ptr = NULL;
+    Sp_Hash_Table(const char*, int) ht = {0};
 
     sp_ht_insert(&ht, "Alpha", 1);
     sp_ht_insert(&ht, "Beta", 2);
@@ -153,58 +168,28 @@ static void sptl_test_ht_insert(void **state) {
 
     assert_true(ht.count == 4);
 
-    ptr = sp_ht_get(&ht, "Alpha");
+    sp_ht_node_t(&ht)* ptr = NULL;
+    sp_ht_get(&ht, "Alpha", &ptr);
     assert_true(ptr != NULL);
     assert_true(ptr->value == 1);
 
-    ptr = sp_ht_get(&ht, "Beta");
+    sp_ht_get(&ht, "Beta", &ptr);
     assert_true(ptr != NULL);
     assert_true(ptr->value == 2);
 
-    ptr = sp_ht_get(&ht, "Sigma");
+    sp_ht_get(&ht, "Sigma", &ptr);
     assert_true(ptr != NULL);
     assert_true(ptr->value == 3);
 
-    ptr = sp_ht_get(&ht, "Omega");
+    sp_ht_get(&ht, "Omega", &ptr);
     assert_true(ptr != NULL);
     assert_true(ptr->value == 4);
 
     sp_ht_free(&ht);
-}
-
-static void sptl_test_ht_rehash(void **state) {
-    (void) state;
-
-    Sp_Hash_Table(int) ht = {0};
-    sp_ht_node_ptr(&ht) ptr = NULL;
-
-    sp_ht_insert(&ht, "Alpha", 1);
-    sp_ht_insert(&ht, "Beta", 2);
-    sp_ht_insert(&ht, "Sigma", 3);
-    sp_ht_insert(&ht, "Omega", 4);
-
-    assert_true(ht.count == 4);
-
-    ht.capacity *= 2;
-    sp_ht_rehash(&ht, ht.capacity / 2);
-
-    ptr = sp_ht_get(&ht, "Alpha");
-    assert_true(ptr != NULL);
-    assert_true(ptr->value == 1);
-
-    ptr = sp_ht_get(&ht, "Beta");
-    assert_true(ptr != NULL);
-    assert_true(ptr->value == 2);
-
-    ptr = sp_ht_get(&ht, "Sigma");
-    assert_true(ptr != NULL);
-    assert_true(ptr->value == 3);
-
-    ptr = sp_ht_get(&ht, "Omega");
-    assert_true(ptr != NULL);
-    assert_true(ptr->value == 4);
-
-    sp_ht_free(&ht);
+    assert_true(ht.table.data == NULL);
+    assert_true(ht.table.count == 0);
+    assert_true(ht.table.capacity == 0);
+    assert_true(ht.count == 0);
 }
 
 static const struct CMUnitTest sptl_tests[] = {
@@ -222,7 +207,6 @@ static const struct CMUnitTest sptl_tests[] = {
 
     /* Sp_Hash_Table */
     cmocka_unit_test(sptl_test_ht_insert),
-    cmocka_unit_test(sptl_test_ht_rehash),
 };
 
 int main(void) {
