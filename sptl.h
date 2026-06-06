@@ -148,7 +148,7 @@ __attribute__((format(printf, 2, 3))) static inline int sp_log(Sp_Log_Level log_
 #define sp_da_free(da)                                                                                                 \
     do {                                                                                                               \
         free((da)->data);                                                                                              \
-        memset((da), 0, sizeof(*(da)));                                                                                 \
+        memset((da), 0, sizeof(*(da)));                                                                                \
     } while (0)
 
 typedef Sp_Dynamic_Array(char) Sp_String_Builder;
@@ -238,7 +238,7 @@ static inline const char *sp_sb_cstr(Sp_String_Builder *sb) { return sb->data; }
 #define sp_queue_free(queue)                                                                                           \
     do {                                                                                                               \
         free((queue)->data);                                                                                           \
-        memset((queue), 0, sizeof(*(queue)));                                                                           \
+        memset((queue), 0, sizeof(*(queue)));                                                                          \
     } while (0)
 
 typedef struct sp_ll_node {
@@ -344,9 +344,7 @@ static inline uint32_t hash_fnv(const char *data, const size_t bytes) {
     return hash;
 }
 
-static inline uint32_t sp_ht_streq(const void *s1, const void *s2) {
-    return (uint32_t) !strcmp((const char *) s1, (const char *) s2);
-}
+static inline uint32_t sp_ht_streq(const char *s1, const char *s2) { return (uint32_t) !strcmp(s1, s2); }
 
 /*
  * Hash table implementation with closed addressing collision resolution, where buckets are backed by Sp_Dynamic_Array.
@@ -362,8 +360,8 @@ static inline uint32_t sp_ht_streq(const void *s1, const void *s2) {
             T value;                                                                                                   \
         })) table;                                                                                                     \
         size_t count;                                                                                                  \
-        uint32_t (*hash)(const char *, const size_t);                                                                  \
-        uint32_t (*equal)(const void *, const void *);                                                                 \
+        uint32_t (*hash)(K, const size_t);                                                                             \
+        uint32_t (*equal)(K, K);                                                                                       \
     }
 
 #define sp_ht_node_t(ht) __typeof__(*(ht)->table.data->data)
@@ -377,10 +375,10 @@ static inline uint32_t sp_ht_streq(const void *s1, const void *s2) {
     do {                                                                                                               \
         const size_t expected = (__expected__);                                                                        \
         if (!(ht)->hash) {                                                                                             \
-            (ht)->hash = &hash_fnv;                                                                                    \
+            (ht)->hash = _Generic((ht)->table.data->data->key, const char *: &hash_fnv, default: NULL);                \
         }                                                                                                              \
         if (!(ht)->equal) {                                                                                            \
-            (ht)->equal = &sp_ht_streq;                                                                                \
+            (ht)->equal = _Generic((ht)->table.data->data->key, const char *: &sp_ht_streq, default: NULL);            \
         }                                                                                                              \
         if ((ht)->table.capacity == 0) {                                                                               \
             sp_da_resize(&(ht)->table, expected < SP_HT_INIT_CAP ? expected : SP_HT_INIT_CAP);                         \

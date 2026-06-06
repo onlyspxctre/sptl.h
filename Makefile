@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 CC := clang
-CFLAGS := -Wall -Wextra -std=c99 -pedantic -g
+CFLAGS := -Wall -Wextra -std=c11 -pedantic -g
 
 LIBS := -lcmocka
 

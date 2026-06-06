@@ -1,12 +1,9 @@
 # sptl.h
 
-Recreational header-only library for simple implementations of common utils and data structures not present by default in the C language.
+Recreational, header-only, macro-implemented library that provides elegant yet pragmatic implementations of common utils and data structures not present by default in the C standard library.
 
 > [!WARNING]
 > This library is extremely experimental and should only be used for recreational purposes only!
-
-> [!NOTE]
-> Some macros in this library uses non-standard extensions that may not be available in all C compilers. For compatibility sakes, only the GCC and Clang compilers are supported.
 
 ## Features
 
@@ -22,6 +19,13 @@ Recreational header-only library for simple implementations of common utils and 
     - Verbose logs with `-DSP_VERBOSE_LOGS` and the `SP_VERBOSE` log level
 
 ## Usage
+
+    > [!NOTE]
+    > This library uses non-standard extensions that may not be available in all C compilers. Ensure that your compiler:
+    > - Supports `__typeof__` and is C11 compliant.
+    > - **OR** Is C23 compliant.
+
+    > For the sake of compatibility and maintainability, only the GCC and Clang compilers are officially supported.
 
 ```c
 #include "sptl.h"
