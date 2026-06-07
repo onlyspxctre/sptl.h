@@ -353,6 +353,7 @@ static inline uint32_t sp_ht_streq(const char *s1, const char *s2) { return (uin
  * `SP_HT_LOAD_CAPACITY` (default = 0.9).
  */
 // TODO: strlen is undefined for non string types, meaning only const char* keys are supported as of right now
+// TODO: duplicate keys is not implemented
 #define Sp_Hash_Table(K, T)                                                                                            \
     struct {                                                                                                           \
         Sp_Dynamic_Array(Sp_Dynamic_Array(struct {                                                                     \
@@ -401,6 +402,8 @@ static inline uint32_t sp_ht_streq(const char *s1, const char *s2) { return (uin
         }                                                                                                              \
     } while (0)
 
+/* Points `sp_ht_node_t_ptr` to the `sp_ht_node_t` instance containing the key, or NULL if not found.
+ * This pointer can be invalidated by any subsequent instructions to the `Sp_Hash_Table` object. */
 #define sp_ht_get(ht, __key__, sp_ht_node_t_ptr)                                                                       \
     do {                                                                                                               \
         if ((sp_ht_node_t_ptr)) {                                                                                      \
