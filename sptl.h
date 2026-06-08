@@ -413,8 +413,7 @@ static inline uint32_t sp_ht_streq(const char *s1, const char *s2) { return (uin
                                  sp_da_get(&(sp_da_get(&(ht)->table, macro_var(idx))), macro_var(i)).key)) {           \
                     continue;                                                                                          \
                 } else {                                                                                               \
-                    *((sp_ht_node_t(ht) **) (sp_ht_node_t_ptr)) =                                                      \
-                        &(sp_da_get(&sp_da_get(&(ht)->table, macro_var(idx)), macro_var(i)));                          \
+                    *((sp_ht_node_t_ptr)) = &(sp_da_get(&sp_da_get(&(ht)->table, macro_var(idx)), macro_var(i)));      \
                 }                                                                                                      \
             }                                                                                                          \
         }                                                                                                              \
