@@ -56,8 +56,8 @@ static void sptl_test_ll_push_pop_back(void **state) {
     assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 1);
 
     sp_ll_push_back(&ll, 2);
-    assert_true(*(int*) ll.head->data == 1);
-    assert_true(*(int*) ll.tail->data == 2);
+    assert_true(*(int *) ll.head->data == 1);
+    assert_true(*(int *) ll.tail->data == 2);
     assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 1);
     assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 2);
 
@@ -159,7 +159,7 @@ static void sptl_test_queue_push_peek_pop(void **state) {
 static void sptl_test_ht_insert(void **state) {
     (void) state;
 
-    Sp_Hash_Table(const char*, int) ht = {0};
+    Sp_Hash_Table(const char *, int) ht = {0};
 
     sp_ht_insert(&ht, "Alpha", 1);
     sp_ht_insert(&ht, "Beta", 2);
@@ -168,7 +168,7 @@ static void sptl_test_ht_insert(void **state) {
 
     assert_true(ht.count == 4);
 
-    sp_ht_node_t(&ht)* ptr = NULL;
+    sp_ht_node_t(&ht) *ptr = NULL;
     sp_ht_get(&ht, "Alpha", &ptr);
     assert_true(ptr != NULL);
     assert_true(ptr->value == 1);
@@ -192,6 +192,28 @@ static void sptl_test_ht_insert(void **state) {
     assert_true(ht.count == 0);
 }
 
+static void sptl_test_ht_dup_insert(void **state) {
+    (void) state;
+
+    Sp_Hash_Table(const char *, int) ht = {0};
+    sp_ht_node_t(&ht) *ptr = NULL;
+
+    sp_ht_insert(&ht, "Bob", 5);
+
+    sp_ht_get(&ht, "Bob", &ptr);
+    assert_true(ptr);
+
+    assert_true(ptr->value == 5);
+
+    sp_ht_insert(&ht, "Bob", 10);
+    assert_true(ptr->value == 10);
+
+    sp_ht_insert(&ht, "Bob", 15);
+    assert_true(ptr->value == 15);
+
+    sp_ht_free(&ht);
+}
+
 static const struct CMUnitTest sptl_tests[] = {
     /* Sp_Dynamic_Array */
     cmocka_unit_test(sptl_test_da_resize),
@@ -207,8 +229,8 @@ static const struct CMUnitTest sptl_tests[] = {
 
     /* Sp_Hash_Table */
     cmocka_unit_test(sptl_test_ht_insert),
+    cmocka_unit_test(sptl_test_ht_insert),
+    cmocka_unit_test(sptl_test_ht_dup_insert),
 };
 
-int main(void) {
-    return cmocka_run_group_tests(sptl_tests, NULL, NULL);
-}
+int main(void) { return cmocka_run_group_tests(sptl_tests, NULL, NULL); }
