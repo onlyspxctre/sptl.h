@@ -1,22 +1,22 @@
 #include "sptl.h"
 #include <cmocka.h>
+#include <string.h>
 
 static void sptl_test_da_resize(void **state) {
     (void) state;
 
     Sp_Dynamic_Array(int) da = {0};
 
-    sp_da_reserve(&da, 16);
-    memset(da.data, -1, da.capacity * sizeof(*da.data));
+    sp_da_reserve(&da, SP_DA_INIT_CAP);
+    memset(da.data, 1, da.capacity * sizeof(*da.data));
     sp_da_resize(&da, 6);
 
     assert_true(da.count == 6);
+    assert_true(da.capacity == 16);
     for (size_t i = 0; i < da.capacity; ++i) {
         if (i < da.count) {
             assert_true(da.data[i] == 0);
-        } else {
-            assert_true(da.data[i] == -1);
-        }
+        } 
     }
 
     sp_da_free(&da);
@@ -45,6 +45,41 @@ static void sptl_test_da_pop_overflow(void **state) {
     assert_true(da.data == NULL);
     assert_true(da.count == 0);
     assert_true(da.capacity == 0);
+}
+
+static void sptl_test_da_pop_shrink(void **state) {
+    (void) state;
+
+    Sp_Dynamic_Array(int) da = {0};
+
+    for (size_t i = 0; i < 4; ++i) {
+        sp_da_push(&da, (int) i + 1);
+    }
+    assert_true(da.count == 4);
+    assert_true(da.capacity == SP_DA_INIT_CAP);
+
+    sp_da_pop(&da);
+
+    assert_true(da.count == 3);
+    assert_true(da.capacity == 6);
+
+    sp_da_free(&da);
+}
+
+static void sptl_test_sb_appendf(void **state) {
+    (void) state;
+
+    Sp_String_Builder sb = {0};
+
+    sp_sb_appendf(&sb, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+
+    assert_true(strcmp(sb.data, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") == 0);
+    assert_true(sb.count == 42);
+
+    sp_da_free(&sb);
+    assert_true(sb.data == NULL);
+    assert_true(sb.count == 0);
+    assert_true(sb.capacity == 0);
 }
 static void sptl_test_ll_push_pop_back(void **state) {
     (void) state;
@@ -218,6 +253,10 @@ static const struct CMUnitTest sptl_tests[] = {
     /* Sp_Dynamic_Array */
     cmocka_unit_test(sptl_test_da_resize),
     cmocka_unit_test(sptl_test_da_pop_overflow),
+    cmocka_unit_test(sptl_test_da_pop_shrink),
+
+    /* Sp_String_Builder */
+    cmocka_unit_test(sptl_test_sb_appendf),
 
     /* Sp_Linked_List */
     cmocka_unit_test(sptl_test_ll_push_pop_back),
@@ -231,6 +270,7 @@ static const struct CMUnitTest sptl_tests[] = {
     cmocka_unit_test(sptl_test_ht_insert),
     cmocka_unit_test(sptl_test_ht_insert),
     cmocka_unit_test(sptl_test_ht_dup_insert),
+
 };
 
 int main(void) { return cmocka_run_group_tests(sptl_tests, NULL, NULL); }

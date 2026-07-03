@@ -90,24 +90,36 @@ __attribute__((format(printf, 2, 3))) static inline int sp_log(Sp_Log_Level log_
 #define sp_da_type(da) __typeof__((da)->data)
 #define sp_da_get(da, i) (da)->data[i]
 
-// TODO: Generalize reserve operation into a common backend (related sp_ht_reserve)
 #define SP_DA_INIT_CAP 16
+
+#define sp_da_alloc(da, __capacity__)                                                                                  \
+    __sp_da_alloc((void **) &(da)->data, &(da)->capacity, __capacity__, sizeof(*(da)->data))
+
+static inline void __sp_da_alloc(void **data, size_t *capacity, size_t new_capacity, size_t type_size) {
+    if (!data || !capacity) {
+        return;
+    }
+    void *alloc = malloc(new_capacity * type_size);
+    if (*data) {
+        memcpy(alloc, *data, ((new_capacity < *capacity ? new_capacity : *capacity) * type_size));
+        free(*data);
+    }
+    *data = alloc;
+    *capacity = new_capacity;
+}
+
 #define sp_da_reserve(da, __expected__)                                                                                \
     do {                                                                                                               \
-        const size_t expected = (__expected__);                                                                        \
-        size_t capacity = (da)->capacity;                                                                              \
-        if (capacity < expected) {                                                                                     \
-            if (capacity == 0) {                                                                                       \
-                capacity = expected;                                                                                   \
+        const size_t macro_var(expected) = (__expected__);                                                             \
+        size_t macro_var(capacity) = (da)->capacity;                                                                   \
+        if (macro_var(capacity) < macro_var(expected)) {                                                               \
+            if (macro_var(capacity) == 0) {                                                                            \
+                macro_var(capacity) = macro_var(expected);                                                             \
             }                                                                                                          \
-            while (capacity < expected) {                                                                              \
-                capacity *= 2;                                                                                         \
+            while (macro_var(capacity) < macro_var(expected)) {                                                        \
+                macro_var(capacity) *= 2;                                                                              \
             }                                                                                                          \
-            __typeof__((da)->data) data = (__typeof__((da)->data)) malloc(capacity * sizeof(*(da)->data));             \
-            memcpy(data, (da)->data, (da)->count * sizeof(*(da)->data));                                               \
-            free((da)->data);                                                                                          \
-            (da)->data = data;                                                                                         \
-            (da)->capacity = capacity;                                                                                 \
+            sp_da_alloc(da, macro_var(capacity));                                                                      \
         }                                                                                                              \
     } while (0)
 
@@ -125,7 +137,7 @@ __attribute__((format(printf, 2, 3))) static inline int sp_log(Sp_Log_Level log_
 
 #define sp_da_push(da, element)                                                                                        \
     do {                                                                                                               \
-        sp_da_reserve((da), (da)->count + 1);                                                                          \
+        sp_da_reserve((da), !(da)->data ? SP_DA_INIT_CAP : (da)->count + 1);                                           \
         (da)->data[(da)->count++] = element;                                                                           \
     } while (0)
 
@@ -134,6 +146,9 @@ __attribute__((format(printf, 2, 3))) static inline int sp_log(Sp_Log_Level log_
         if ((da)->count > 0)                                                                                           \
             --(da)->count;                                                                                             \
         (da)->data[(da)->count] = 0;                                                                                   \
+        if ((da)->count < (size_t) (0.25 * (double) (da)->capacity)) {                                                 \
+            sp_da_alloc(da, (da)->count * 2);                                                                          \
+        }                                                                                                              \
     } while (0)
 
 /*
@@ -221,7 +236,7 @@ static inline const char *sp_sb_cstr(Sp_String_Builder *sb) { return sb->data; }
 
 #define sp_queue_push(queue, element)                                                                                  \
     do {                                                                                                               \
-        sp_queue_reserve((queue), (queue)->count + 1);                                                                 \
+        sp_queue_reserve((queue), !(queue)->data ? SP_QUEUE_INIT_CAP : (queue)->count + 1);                            \
         (queue)->data[(queue)->tail++ % (queue)->capacity] = (element);                                                \
         ++(queue)->count;                                                                                              \
     } while (0)
