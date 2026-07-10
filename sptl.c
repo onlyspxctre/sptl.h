@@ -249,6 +249,42 @@ static void sptl_test_ht_dup_insert(void **state) {
     sp_ht_free(&ht);
 }
 
+static inline Sp_String_Builder uint8_to_binary_str(uint8_t val) {
+    Sp_String_Builder sp = {0};
+
+    uint16_t subtractor = 256;
+    bool state = false;
+
+    while (val > 0) {
+        if (val - subtractor < 0) {
+            // bit is 0
+            if (state) {
+                sp_sb_appendf(&sp, "%c", '0');
+            }
+        }
+        else {
+            // bit is 1
+            sp_sb_appendf(&sp, "%c", '1');
+            state = true;
+            val -= subtractor;
+        }
+
+        subtractor >>= 1;
+    }
+
+    return sp;
+}
+
+static void sptl_test_sb_binary(void **state) {
+    (void) state;
+
+    Sp_String_Builder sb = uint8_to_binary_str(25);
+
+    assert_true(strcmp(sb.data, "11001") == 0);
+
+    sp_da_free(&sb);
+}
+
 static const struct CMUnitTest sptl_tests[] = {
     /* Sp_Dynamic_Array */
     cmocka_unit_test(sptl_test_da_resize),
@@ -270,6 +306,9 @@ static const struct CMUnitTest sptl_tests[] = {
     cmocka_unit_test(sptl_test_ht_insert),
     cmocka_unit_test(sptl_test_ht_insert),
     cmocka_unit_test(sptl_test_ht_dup_insert),
+
+    /* Miscellaneous */
+    cmocka_unit_test(sptl_test_sb_binary),
 
 };
 
