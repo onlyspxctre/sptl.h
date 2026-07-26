@@ -7,6 +7,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(_WIN32)
+    #if defined(SP_WIN32_EXPORT)
+        #define SPExtern __declspec(dllexport)
+    #else
+        #define SPExtern __declspec(dllimport)
+    #endif
+#elif defined(__linux__)
+    #define SPExtern
+#endif
+
 #define INNER_CONCAT(a, b) a##b
 #define CONCAT(a, b) INNER_CONCAT(a, b)
 
