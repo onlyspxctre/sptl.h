@@ -479,8 +479,6 @@ static inline uint32_t sp_ht_streq(const char *s1, const char *s2) { return (uin
         memset((ht), 0, sizeof(*(ht)));                                                   \
     } while (0)
 
-#endif
-
 #define sp_mh_capacity_from_height(height) (((1U) << (height)) - 1) /* 1-based height. */
 #define sp_bt_node_parent_idx(idx) ((idx - 1) / 2)
 #define sp_bt_node_lchild_idx(idx) ((2 * idx) + 1)
@@ -580,3 +578,5 @@ static inline void __sp_mh_alloc(void **data, size_t *height, size_t new_height,
         (heap)->height = 0;     \
         (heap)->cmp = NULL;     \
     } while (0)
+
+#endif
