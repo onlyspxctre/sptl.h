@@ -249,6 +249,36 @@ static void sptl_test_ht_dup_insert(void **state) {
     sp_ht_free(&ht);
 }
 
+static void sptl_test_mh_insert(void **state) {
+    (void) state;
+
+    // Pushing (ensure heap property)
+    Sp_Min_Heap(int) mh = {0};
+    sp_mh_push(&mh, 7);
+    sp_mh_push(&mh, 5);
+
+    assert_true(sp_mh_top(&mh) == 5);
+    assert_true(mh.data[1] == 7);
+
+    sp_mh_push(&mh, 12);
+    assert_true(mh.data[2] == 12);
+
+    assert_true(mh.count == 3);
+
+    // Popping (ensure heap property)
+
+    sp_mh_pop(&mh);
+    assert_true(sp_mh_top(&mh) == 7);
+
+    sp_mh_pop(&mh);
+    assert_true(sp_mh_top(&mh) == 12);
+
+    sp_mh_pop(&mh);
+    assert_true(mh.count == 0);
+
+    sp_mh_free(&mh);
+}
+
 static inline Sp_String_Builder uint8_to_binary_str(uint8_t val) {
     Sp_String_Builder sp = {0};
 
@@ -304,8 +334,10 @@ static const struct CMUnitTest sptl_tests[] = {
 
     /* Sp_Hash_Table */
     cmocka_unit_test(sptl_test_ht_insert),
-    cmocka_unit_test(sptl_test_ht_insert),
     cmocka_unit_test(sptl_test_ht_dup_insert),
+
+    /* Sp_Min_Heap */
+    cmocka_unit_test(sptl_test_mh_insert),
 
     /* Miscellaneous */
     cmocka_unit_test(sptl_test_sb_binary),
