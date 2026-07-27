@@ -486,7 +486,7 @@ static inline uint32_t sp_ht_streq(const char *s1, const char *s2) { return (uin
 #define sp_bt_node_lchild_idx(idx) ((2 * idx) + 1)
 #define sp_bt_node_rchild_idx(idx) ((2 * idx) + 2)
 
-#define SP_MH_INIT_CAP sp_mh_capacity_from_height(3)
+#define SP_MH_INIT_HEIGHT 3
 #define Sp_Min_Heap(T)    \
     struct {              \
         T *data;          \
@@ -550,14 +550,14 @@ static inline void __sp_mh_alloc(void **data, size_t *height, size_t new_height,
 
 #define sp_mh_push(heap, __element__)                                              \
     do {                                                                           \
-        const size_t element = (__element__);                                      \
+        const __typeof__(__element__) element = (__element__);                     \
         if (!(heap)->cmp) {                                                        \
             (heap)->cmp = _Generic(*(heap)->data, int: &sp_mh_cmp, default: NULL); \
         }                                                                          \
         if ((heap)->height == 0) {                                                 \
-            sp_mh_alloc((heap), ((heap)->height = SP_MH_INIT_CAP));                \
+            sp_mh_alloc((heap), SP_MH_INIT_HEIGHT);                                \
         } else if ((heap)->count >= sp_mh_capacity_from_height((heap)->height)) {  \
-            sp_mh_alloc((heap), ++(heap)->height);                                 \
+            sp_mh_alloc((heap), (heap)->height + 1);                               \
         }                                                                          \
         (heap)->data[(heap)->count] = element;                                     \
         sp_mh_heapify_up(heap, (heap)->count++);                                   \

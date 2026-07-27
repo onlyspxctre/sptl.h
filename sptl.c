@@ -279,6 +279,33 @@ static void sptl_test_mh_insert(void **state) {
     sp_mh_free(&mh);
 }
 
+static void sptl_test_mh_expand(void **state) {
+    (void) state;
+
+    Sp_Min_Heap(int) mh = {0};
+
+    sp_mh_push(&mh, 1);
+    assert_true(mh.count == 1);
+
+
+    assert_true(mh.height == 3);
+    assert_true(sp_mh_capacity_from_height(mh.height) == 7);
+
+    for (size_t i = 2; i <= 7; ++i) {
+        sp_mh_push(&mh, (int) i);
+    }
+
+    assert_true(mh.height == 3);
+    assert_true(sp_mh_capacity_from_height(mh.height) == 7);
+
+    sp_mh_push(&mh, 8);
+
+    assert_true(mh.height == 4);
+    assert_true(sp_mh_capacity_from_height(mh.height) == 15);
+
+    sp_mh_free(&mh);
+}
+
 static inline Sp_String_Builder uint8_to_binary_str(uint8_t val) {
     Sp_String_Builder sp = {0};
 
@@ -338,6 +365,7 @@ static const struct CMUnitTest sptl_tests[] = {
 
     /* Sp_Min_Heap */
     cmocka_unit_test(sptl_test_mh_insert),
+    cmocka_unit_test(sptl_test_mh_expand),
 
     /* Miscellaneous */
     cmocka_unit_test(sptl_test_sb_binary),
