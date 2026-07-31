@@ -221,7 +221,7 @@ static inline const char *sp_sb_cstr(Sp_String_Builder *sb) { return sb->data; }
 
 typedef struct {
     const char *ptr;
-    size_t len;
+    size_t count;
 } Sp_String_Slice;
 
 #define SP_STR_SLICE_FMT "%.*s"
@@ -230,10 +230,10 @@ typedef struct {
 /*
  * Generates an `Sp_String_Slice` from C string with a defined length.
  */
-static inline Sp_String_Slice sp_str_slice_from_cstr_ext(const char *str, const size_t len) {
+static inline Sp_String_Slice sp_str_slice_from_cstr_ext(const char *str, const size_t count) {
     return (Sp_String_Slice) {
         .ptr = str,
-        .len = len,
+        .count = count,
     };
 }
 
@@ -248,16 +248,16 @@ static inline int sp_str_slice_cmp(const Sp_String_Slice *lhs, const Sp_String_S
     assert(lhs);
     assert(rhs);
 
-    int res = memcmp(lhs->ptr, rhs->ptr, lhs->len < rhs->len ? lhs->len : rhs->len);
+    int res = memcmp(lhs->ptr, rhs->ptr, lhs->count < rhs->count ? lhs->count : rhs->count);
 
     if (res != 0) {
         return res;
     }
 
-    if (lhs->len < rhs->len) {
+    if (lhs->count < rhs->count) {
         return -1;
     }
-    else if (lhs->len > rhs->len) {
+    else if (lhs->count > rhs->count) {
         return 1;
     }
 
