@@ -1,6 +1,7 @@
 #ifndef SPTL_H
 #define SPTL_H
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -217,6 +218,51 @@ static inline Sp_String_Builder sp_cstr_to_sb(const char *cstr) {
 }
 
 static inline const char *sp_sb_cstr(Sp_String_Builder *sb) { return sb->data; }
+
+typedef struct {
+    const char *ptr;
+    size_t len;
+} Sp_String_Slice;
+
+#define SP_STR_SLICE_FMT "%.*s"
+#define sp_str_slice_arg(str_slice) (int)(str_slice).len, (str_slice).ptr
+
+/*
+ * Generates an `Sp_String_Slice` from C string with a defined length.
+ */
+static inline Sp_String_Slice sp_str_slice_from_cstr_ext(const char *str, const size_t len) {
+    return (Sp_String_Slice) {
+        .ptr = str,
+        .len = len,
+    };
+}
+
+/*
+ * Generates an `Sp_String_Slice` from a null-terminated C string.
+ */
+static inline Sp_String_Slice sp_str_slice_from_cstr(const char *str) {
+    return sp_str_slice_from_cstr_ext(str, strlen(str));
+}
+
+static inline int sp_str_slice_cmp(const Sp_String_Slice *lhs, const Sp_String_Slice *rhs) {
+    assert(lhs);
+    assert(rhs);
+
+    int res = memcmp(lhs->ptr, rhs->ptr, lhs->len < rhs->len ? lhs->len : rhs->len);
+
+    if (res != 0) {
+        return res;
+    }
+
+    if (lhs->len < rhs->len) {
+        return -1;
+    }
+    else if (lhs->len > rhs->len) {
+        return 1;
+    }
+
+    return 0;
+}
 
 #define Sp_Queue(T)      \
     struct {             \

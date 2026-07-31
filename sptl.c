@@ -81,6 +81,21 @@ static void sptl_test_sb_appendf(void **state) {
     assert_true(sb.count == 0);
     assert_true(sb.capacity == 0);
 }
+
+static void sptl_test_str_slice(void **state) {
+    (void) state;
+
+    Sp_String_Builder sb = {0};
+    sp_sb_appendf(&sb, "sdf");
+
+    Sp_String_Slice lhs = sp_str_slice_from_cstr(sb.data);
+    Sp_String_Slice rhs = sp_str_slice_from_cstr("sdf");
+
+    assert_true(sp_str_slice_cmp(&lhs, &rhs) == 0);
+
+    sp_da_free(&sb);
+}
+
 static void sptl_test_ll_push_pop_back(void **state) {
     (void) state;
 
@@ -350,6 +365,9 @@ static const struct CMUnitTest sptl_tests[] = {
 
     /* Sp_String_Builder */
     cmocka_unit_test(sptl_test_sb_appendf),
+
+    /* Sp_String_Slice */
+    cmocka_unit_test(sptl_test_str_slice),
 
     /* Sp_Linked_List */
     cmocka_unit_test(sptl_test_ll_push_pop_back),
