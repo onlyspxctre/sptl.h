@@ -550,7 +550,7 @@ static inline uint32_t sp_ht_streq(const char *const *s1, const char *const *s2)
     }
 
 static inline int sp_lesser_int_cmp(const int a, const int b) {
-    return a - b;
+    return a < b;
 }
 
 #define sp_bt_alloc(heap, __height__) \
