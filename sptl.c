@@ -211,27 +211,27 @@ static void sptl_test_ht_insert(void **state) {
 
     Sp_Hash_Table(const char *, int) ht = {0};
 
-    sp_ht_insert(&ht, "Alpha", 1);
-    sp_ht_insert(&ht, "Beta", 2);
-    sp_ht_insert(&ht, "Sigma", 3);
-    sp_ht_insert(&ht, "Omega", 4);
+    sp_ht_insert(&ht, sp_cstr("Alpha"), 1);
+    sp_ht_insert(&ht, sp_cstr("Beta"), 2);
+    sp_ht_insert(&ht, sp_cstr("Sigma"), 3);
+    sp_ht_insert(&ht, sp_cstr("Omega"), 4);
 
     assert_true(ht.count == 4);
 
     sp_ht_node_t(&ht) *ptr = NULL;
-    sp_ht_get(&ht, "Alpha", &ptr);
+    sp_ht_get(&ht, sp_cstr("Alpha"), &ptr);
     assert_true(ptr != NULL);
     assert_true(ptr->value == 1);
 
-    sp_ht_get(&ht, "Beta", &ptr);
+    sp_ht_get(&ht, sp_cstr("Beta"), &ptr);
     assert_true(ptr != NULL);
     assert_true(ptr->value == 2);
 
-    sp_ht_get(&ht, "Sigma", &ptr);
+    sp_ht_get(&ht, sp_cstr("Sigma"), &ptr);
     assert_true(ptr != NULL);
     assert_true(ptr->value == 3);
 
-    sp_ht_get(&ht, "Omega", &ptr);
+    sp_ht_get(&ht, sp_cstr("Omega"), &ptr);
     assert_true(ptr != NULL);
     assert_true(ptr->value == 4);
 
@@ -248,21 +248,43 @@ static void sptl_test_ht_dup_insert(void **state) {
     Sp_Hash_Table(const char *, int) ht = {0};
     sp_ht_node_t(&ht) *ptr = NULL;
 
-    sp_ht_insert(&ht, "Bob", 5);
+    sp_ht_insert(&ht, sp_cstr("Bob"), 5);
 
-    sp_ht_get(&ht, "Bob", &ptr);
+    sp_ht_get(&ht, sp_cstr("Bob"), &ptr);
     assert_true(ptr);
 
     assert_true(ptr->value == 5);
 
-    sp_ht_insert(&ht, "Bob", 10);
+    sp_ht_insert(&ht, sp_cstr("Bob"), 10);
     assert_true(ptr->value == 10);
 
-    sp_ht_insert(&ht, "Bob", 15);
+    sp_ht_insert(&ht, sp_cstr("Bob"), 15);
     assert_true(ptr->value == 15);
 
     sp_ht_free(&ht);
 }
+
+static void sptl_test_ht_sv_insert(void **state) {
+    (void) state;
+
+    Sp_Hash_Table(Sp_String_Slice, int) ht = {0};
+    sp_ht_node_t(&ht) *ptr = NULL;
+
+    sp_ht_insert(&ht, sp_cstr_slice("Bob"), 5);
+    sp_ht_get(&ht, sp_cstr_slice("Bob"), &ptr);
+    assert_true(ptr->value == 5);
+
+    sp_ht_insert(&ht, sp_cstr_slice("Bob"), 7);
+    sp_ht_get(&ht, sp_cstr_slice("Bob"), &ptr);
+    assert_true(ptr->value == 7);
+
+    sp_ht_insert(&ht, sp_cstr_slice("Bob"), 9);
+    sp_ht_get(&ht, sp_cstr_slice("Bob"), &ptr);
+    assert_true(ptr->value == 9);
+
+    sp_ht_free(&ht);
+}
+
 
 static void sptl_test_mh_insert(void **state) {
     (void) state;
@@ -380,6 +402,7 @@ static const struct CMUnitTest sptl_tests[] = {
     /* Sp_Hash_Table */
     cmocka_unit_test(sptl_test_ht_insert),
     cmocka_unit_test(sptl_test_ht_dup_insert),
+    cmocka_unit_test(sptl_test_ht_sv_insert),
 
     /* Sp_Min_Heap */
     cmocka_unit_test(sptl_test_mh_insert),

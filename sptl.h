@@ -224,8 +224,11 @@ typedef struct {
     size_t count;
 } Sp_String_Slice;
 
+// TODO: C23 can make this macro static const, which turns this macro into a zero cost abstraction;
+// C11 forces this to be created as a stack variable at runtime, which incurs runtime overhead
+#define sp_cstr(literal) (const char *const){ literal }
 #define SP_STR_SLICE_FMT "%.*s"
-#define sp_str_slice_arg(str_slice) (int)(str_slice).len, (str_slice).ptr
+#define sp_str_slice_arg(str_slice) (int) (str_slice).count, (str_slice).ptr
 
 /*
  * Generates an `Sp_String_Slice` from C string with a defined length.
@@ -244,6 +247,8 @@ static inline Sp_String_Slice sp_str_slice_from_cstr(const char *str) {
     return sp_str_slice_from_cstr_ext(str, strlen(str));
 }
 
+#define sp_cstr_slice(cstr) (Sp_String_Slice) { .ptr = cstr, .count = strlen(cstr) }
+
 static inline int sp_str_slice_cmp(const Sp_String_Slice *lhs, const Sp_String_Slice *rhs) {
     assert(lhs);
     assert(rhs);
@@ -256,12 +261,15 @@ static inline int sp_str_slice_cmp(const Sp_String_Slice *lhs, const Sp_String_S
 
     if (lhs->count < rhs->count) {
         return -1;
-    }
-    else if (lhs->count > rhs->count) {
+    } else if (lhs->count > rhs->count) {
         return 1;
     }
 
     return 0;
+}
+
+static inline uint32_t sp_str_slice_eq(const Sp_String_Slice *lhs, const Sp_String_Slice *rhs) {
+    return !sp_str_slice_cmp(lhs, rhs);
 }
 
 #define Sp_Queue(T)      \
@@ -412,17 +420,29 @@ typedef struct sp_ll_node {
 #define FNV_PRIME_32 16777619
 #define FNV_OFFSET_BASIS_32 2166136261
 
-static inline uint32_t hash_fnv(const char *data, const size_t bytes) {
+static inline uint32_t hash_fnv(const char *const *data, const size_t bytes) {
+    assert(data);
+    assert(*data);
     uint32_t hash = FNV_OFFSET_BASIS_32;
 
     for (size_t i = 0; i < bytes; ++i) {
-        hash = (hash ^ (uint32_t) data[i]) * FNV_PRIME_32; // EXPERIMENTAL: casting to uint32_t may break hash function
+        hash = (hash ^ (uint32_t) (*data)[i]) * FNV_PRIME_32; // EXPERIMENTAL: casting to uint32_t may break hash function
     }
 
     return hash;
 }
 
-static inline uint32_t sp_ht_streq(const char *s1, const char *s2) { return (uint32_t) !strcmp(s1, s2); }
+static inline uint32_t sp_cstr_hash_fnv(const char *const *cstr) {
+    assert(cstr);
+    return hash_fnv(cstr, strlen(*cstr));
+}
+
+static inline uint32_t sp_str_slice_hash_fnv(const Sp_String_Slice *slice) {
+    assert(slice);
+    return hash_fnv(&slice->ptr, slice->count);
+}
+
+static inline uint32_t sp_ht_streq(const char *const *s1, const char *const *s2) { return (uint32_t) !strcmp(*s1, *s2); }
 
 /*
  * Hash table implementation with closed addressing collision resolution, where buckets are backed by Sp_Dynamic_Array.
@@ -438,8 +458,8 @@ static inline uint32_t sp_ht_streq(const char *s1, const char *s2) { return (uin
             T value;                               \
         })) table;                                 \
         size_t count;                              \
-        uint32_t (*hash)(K, const size_t);         \
-        uint32_t (*equal)(K, K);                   \
+        uint32_t (*hash)(K const *);               \
+        uint32_t (*equal)(K const *, K const *);   \
     }
 
 #define sp_ht_node_t(ht) __typeof__(*(ht)->table.data->data)
@@ -449,71 +469,72 @@ static inline uint32_t sp_ht_streq(const char *s1, const char *s2) { return (uin
 #define SP_HT_LOAD_CAPACITY 0.9
 #define SP_HT_INIT_CAP 16
 
-#define sp_ht_reserve(ht, __expected__)                                                                             \
-    do {                                                                                                            \
-        const size_t expected = (__expected__);                                                                     \
-        if (!(ht)->hash) {                                                                                          \
-            (ht)->hash = _Generic((ht)->table.data->data->key, const char *: &hash_fnv, default: NULL);             \
-        }                                                                                                           \
-        if (!(ht)->equal) {                                                                                         \
-            (ht)->equal = _Generic((ht)->table.data->data->key, const char *: &sp_ht_streq, default: NULL);         \
-        }                                                                                                           \
-        if ((ht)->table.capacity == 0) {                                                                            \
-            sp_da_resize(&(ht)->table, expected < SP_HT_INIT_CAP ? expected : SP_HT_INIT_CAP);                      \
-        } else if ((ht)->count > 0) {                                                                               \
-            __typeof__((ht)->table) old_table = (ht)->table;                                                        \
-            (ht)->table = (__typeof__((ht)->table)) {0};                                                            \
-            sp_da_resize(&(ht)->table, expected);                                                                   \
-            for (size_t macro_var(i) = 0; macro_var(i) < old_table.count; ++macro_var(i)) {                         \
-                for (size_t macro_var(j) = 0; macro_var(j) < sp_da_get(&old_table, macro_var(i)).count;             \
-                     ++macro_var(j)) {                                                                              \
-                    sp_da_push(                                                                                     \
-                        &(ht)->table.data[(ht)->hash(old_table.data[macro_var(i)].data[macro_var(j)].key,           \
-                                                     strlen(old_table.data[macro_var(i)].data[macro_var(j)].key)) % \
-                                          (ht)->table.capacity],                                                    \
-                        old_table.data[macro_var(i)].data[macro_var(j)]);                                           \
-                }                                                                                                   \
-                sp_da_free(&(sp_da_get(&old_table, macro_var(i))));                                                 \
-            }                                                                                                       \
-            sp_da_free(&old_table);                                                                                 \
-        }                                                                                                           \
+#define sp_ht_reserve(ht, __expected__)                                                                                                          \
+    do {                                                                                                                                         \
+        const size_t expected = (__expected__);                                                                                                  \
+        if (!(ht)->hash) {                                                                                                                       \
+            (ht)->hash = _Generic((ht)->table.data->data->key,                                                                                   \
+                    const char *: &sp_cstr_hash_fnv,                                                                                             \
+                    Sp_String_Slice: &sp_str_slice_hash_fnv, default: NULL);                                                                     \
+        }                                                                                                                                        \
+        if (!(ht)->equal) {                                                                                                                      \
+            (ht)->equal = _Generic((ht)->table.data->data->key, const char *: &sp_ht_streq, Sp_String_Slice: &sp_str_slice_eq, default: NULL);   \
+        }                                                                                                                                        \
+        if ((ht)->table.capacity == 0) {                                                                                                         \
+            sp_da_resize(&(ht)->table, expected < SP_HT_INIT_CAP ? expected : SP_HT_INIT_CAP);                                                   \
+        } else if ((ht)->count > 0) {                                                                                                            \
+            __typeof__((ht)->table) old_table = (ht)->table;                                                                                     \
+            (ht)->table = (__typeof__((ht)->table)) {0};                                                                                         \
+            sp_da_resize(&(ht)->table, expected);                                                                                                \
+            for (size_t macro_var(i) = 0; macro_var(i) < old_table.count; ++macro_var(i)) {                                                      \
+                for (size_t macro_var(j) = 0; macro_var(j) < sp_da_get(&old_table, macro_var(i)).count;                                          \
+                     ++macro_var(j)) {                                                                                                           \
+                    sp_da_push(                                                                                                                  \
+                        &(ht)->table.data[(ht)->hash(&(old_table.data[macro_var(i)].data[macro_var(j)].key)) %                                   \
+                                          (ht)->table.capacity],                                                                                 \
+                        old_table.data[macro_var(i)].data[macro_var(j)]);                                                                        \
+                }                                                                                                                                \
+                sp_da_free(&(sp_da_get(&old_table, macro_var(i))));                                                                              \
+            }                                                                                                                                    \
+            sp_da_free(&old_table);                                                                                                              \
+        }                                                                                                                                        \
     } while (0)
 
 /* Points `sp_ht_node_t_ptr` to the `sp_ht_node_t` instance containing the key, or NULL if not found.
  * This pointer can be invalidated by any subsequent instructions to the `Sp_Hash_Table` object. */
-#define sp_ht_get(ht, __key__, sp_ht_node_t_ptr)                                                                  \
-    do {                                                                                                          \
-        if ((sp_ht_node_t_ptr)) {                                                                                 \
-            size_t macro_var(idx) = (ht)->hash((__key__), strlen(__key__)) % (ht)->table.capacity;                \
-            for (size_t macro_var(i) = 0; macro_var(i) < sp_da_get(&(ht)->table, macro_var(idx)).count;           \
-                 ++macro_var(i)) {                                                                                \
-                if (!(ht)->equal((__key__),                                                                       \
-                                 sp_da_get(&(sp_da_get(&(ht)->table, macro_var(idx))), macro_var(i)).key)) {      \
-                    continue;                                                                                     \
-                } else {                                                                                          \
-                    *((sp_ht_node_t_ptr)) = &(sp_da_get(&sp_da_get(&(ht)->table, macro_var(idx)), macro_var(i))); \
-                }                                                                                                 \
-            }                                                                                                     \
-        }                                                                                                         \
+#define sp_ht_get(ht, __key__, sp_ht_node_t_ptr)                                                        \
+    do {                                                                                                \
+        if ((sp_ht_node_t_ptr)) {                                                                       \
+            size_t macro_var(idx) = (ht)->hash(&(__key__)) % (ht)->table.capacity;                      \
+            for (size_t macro_var(i) = 0; macro_var(i) < sp_da_get(&(ht)->table, macro_var(idx)).count; \
+                 ++macro_var(i)) {                                                                      \
+                if (!(ht)->equal(&((__key__)),                                                          \
+                                 &(ht)->table.data[macro_var(idx)].data[macro_var(i)].key)) {           \
+                    continue;                                                                           \
+                } else {                                                                                \
+                    *((sp_ht_node_t_ptr)) = &(ht)->table.data[macro_var(idx)].data[macro_var(i)];       \
+                }                                                                                       \
+            }                                                                                           \
+        }                                                                                               \
     } while (0)
 
-#define sp_ht_insert(ht, __key__, __value__)                                                                      \
-    do {                                                                                                          \
-        if ((ht)->table.capacity == 0) {                                                                          \
-            sp_ht_reserve((ht), SP_HT_INIT_CAP);                                                                  \
-        } else if ((double) (ht)->count > (SP_HT_LOAD_CAPACITY * (double) (ht)->table.capacity)) {                \
-            sp_ht_reserve((ht), (ht)->table.capacity * 2);                                                        \
-        }                                                                                                         \
-        size_t macro_var(idx) = (ht)->hash(__key__, strlen(__key__)) % (ht)->table.capacity;                      \
-        for (size_t macro_var(i) = 0; macro_var(i) < (ht)->table.data[macro_var(idx)].count; ++macro_var(i)) {    \
-            if ((ht)->equal(__key__, (ht)->table.data[macro_var(idx)].data[macro_var(i)].key)) {                  \
-                (ht)->table.data[macro_var(idx)].data[macro_var(i)].value = __value__;                            \
-                goto macro_var(sp_ht_insert_end);                                                                 \
-            }                                                                                                     \
-        }                                                                                                         \
-        sp_da_push(&(ht)->table.data[macro_var(idx)], ((sp_ht_node_t(ht)) {.key = __key__, .value = __value__})); \
-        ++(ht)->count;                                                                                            \
-        macro_var(sp_ht_insert_end) : break;                                                                      \
+#define sp_ht_insert(ht, __key__, __value__)                                                                                \
+    do {                                                                                                                    \
+        if ((ht)->table.capacity == 0) {                                                                                    \
+            sp_ht_reserve((ht), SP_HT_INIT_CAP);                                                                            \
+        } else if ((double) (ht)->count > (SP_HT_LOAD_CAPACITY * (double) (ht)->table.capacity)) {                          \
+            sp_ht_reserve((ht), (ht)->table.capacity * 2);                                                                  \
+        }                                                                                                                   \
+        size_t macro_var(idx) = (ht)->hash(&(__key__)) % (ht)->table.capacity;                       \
+        for (size_t macro_var(i) = 0; macro_var(i) < (ht)->table.data[macro_var(idx)].count; ++macro_var(i)) {              \
+            if ((ht)->equal(&(__key__), &(ht)->table.data[macro_var(idx)].data[macro_var(i)].key)) { \
+                (ht)->table.data[macro_var(idx)].data[macro_var(i)].value = __value__;                                      \
+                goto macro_var(sp_ht_insert_end);                                                                           \
+            }                                                                                                               \
+        }                                                                                                                   \
+        sp_da_push(&(ht)->table.data[macro_var(idx)], ((sp_ht_node_t(ht)) {.key = __key__, .value = __value__}));           \
+        ++(ht)->count;                                                                                                      \
+        macro_var(sp_ht_insert_end) : break;                                                                                \
     } while (0)
 
 #define sp_ht_free(ht)                                                                    \
