@@ -61,7 +61,7 @@ static void sptl_test_da_pop_shrink(void **state) {
     sp_da_pop(&da);
 
     assert_true(da.count == 3);
-    assert_true(da.capacity == 6);
+    assert_true(da.capacity == 8);
 
     sp_da_free(&da);
 }

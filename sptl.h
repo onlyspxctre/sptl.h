@@ -165,7 +165,7 @@ static inline void __sp_da_alloc(void **data, size_t *capacity, size_t new_capac
             --(da)->count;                                             \
         (da)->data[(da)->count] = 0;                                   \
         if ((da)->count < (size_t) (0.25 * (double) (da)->capacity)) { \
-            sp_da_alloc(da, (da)->count * 2);                          \
+            sp_da_alloc(da, (da)->capacity / 2);                       \
         }                                                              \
     } while (0)
 
