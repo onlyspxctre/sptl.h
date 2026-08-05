@@ -558,7 +558,7 @@ static inline void __sp_mh_alloc(void **data, size_t *height, size_t new_height,
     const size_t new_capacity = sp_mh_capacity_from_height(new_height);
     void *alloc = malloc(new_capacity * type_size);
     if (*data) {
-        memcpy(alloc, *data, ((new_capacity < *height ? new_capacity : *height) * type_size));
+        memcpy(alloc, *data, ((new_capacity < sp_mh_capacity_from_height(*height) ? new_capacity : sp_mh_capacity_from_height(*height)) * type_size));
         free(*data);
     }
     *data = alloc;
