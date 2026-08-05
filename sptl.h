@@ -226,11 +226,13 @@ typedef struct {
 
 // TODO: C23 can make this macro static const, which turns this macro into a zero cost abstraction;
 // C11 forces this to be created as a stack variable at runtime, which incurs runtime overhead
-#define sp_cstr(literal) (const char *const){ literal }
+#define sp_cstr(literal) \
+    (const char *const) { literal }
 #define SP_SV_FMT "%.*s"
 #define sp_sv_arg(sv) (int) (sv).count, (sv).ptr
 
-#define sp_cstr_slice(cstr) (Sp_String_View) { .ptr = cstr, .count = strlen(cstr) }
+#define sp_cstr_slice(cstr) \
+    (Sp_String_View) { .ptr = cstr, .count = strlen(cstr) }
 
 static inline int sp_sv_cmp(const Sp_String_View *lhs, const Sp_String_View *rhs) {
     assert(lhs);
@@ -452,37 +454,39 @@ static inline uint32_t sp_ht_streq(const char *const *s1, const char *const *s2)
 #define SP_HT_LOAD_CAPACITY 0.9
 #define SP_HT_INIT_CAP 16
 
-#define sp_ht_reserve(ht, __expected__)                                                                                                          \
-    do {                                                                                                                                         \
-        const size_t expected = (__expected__);                                                                                                  \
-        if (!(ht)->hash) {                                                                                                                       \
-            (ht)->hash = _Generic((ht)->table.data->data->key,                                                                                   \
-                    const char *: &sp_cstr_hash_fnv,                                                                                             \
-                    Sp_String_View: &sp_sv_hash_fnv, default: NULL);                                                                             \
-        }                                                                                                                                        \
-        if (!(ht)->equal) {                                                                                                                      \
-            (ht)->equal = _Generic((ht)->table.data->data->key,                                                                                  \
-                    const char *: &sp_ht_streq,                                                                                                  \
-                    Sp_String_View: &sp_sv_eq, default: NULL);                                                                                   \
-        }                                                                                                                                        \
-        if ((ht)->table.capacity == 0) {                                                                                                         \
-            sp_da_resize(&(ht)->table, expected < SP_HT_INIT_CAP ? expected : SP_HT_INIT_CAP);                                                   \
-        } else if ((ht)->count > 0) {                                                                                                            \
-            __typeof__((ht)->table) old_table = (ht)->table;                                                                                     \
-            (ht)->table = (__typeof__((ht)->table)) {0};                                                                                         \
-            sp_da_resize(&(ht)->table, expected);                                                                                                \
-            for (size_t macro_var(i) = 0; macro_var(i) < old_table.count; ++macro_var(i)) {                                                      \
-                for (size_t macro_var(j) = 0; macro_var(j) < sp_da_get(&old_table, macro_var(i)).count;                                          \
-                     ++macro_var(j)) {                                                                                                           \
-                    sp_da_push(                                                                                                                  \
-                        &(ht)->table.data[(ht)->hash(&(old_table.data[macro_var(i)].data[macro_var(j)].key)) %                                   \
-                                          (ht)->table.capacity],                                                                                 \
-                        old_table.data[macro_var(i)].data[macro_var(j)]);                                                                        \
-                }                                                                                                                                \
-                sp_da_free(&(sp_da_get(&old_table, macro_var(i))));                                                                              \
-            }                                                                                                                                    \
-            sp_da_free(&old_table);                                                                                                              \
-        }                                                                                                                                        \
+#define sp_ht_reserve(ht, __expected__)                                                                        \
+    do {                                                                                                       \
+        const size_t expected = (__expected__);                                                                \
+        if (!(ht)->hash) {                                                                                     \
+            (ht)->hash = _Generic((ht)->table.data->data->key,                                                 \
+                const char *: &sp_cstr_hash_fnv,                                                               \
+                Sp_String_View: &sp_sv_hash_fnv,                                                               \
+                default: NULL);                                                                                \
+        }                                                                                                      \
+        if (!(ht)->equal) {                                                                                    \
+            (ht)->equal = _Generic((ht)->table.data->data->key,                                                \
+                const char *: &sp_ht_streq,                                                                    \
+                Sp_String_View: &sp_sv_eq,                                                                     \
+                default: NULL);                                                                                \
+        }                                                                                                      \
+        if ((ht)->table.capacity == 0) {                                                                       \
+            sp_da_resize(&(ht)->table, expected < SP_HT_INIT_CAP ? expected : SP_HT_INIT_CAP);                 \
+        } else if ((ht)->count > 0) {                                                                          \
+            __typeof__((ht)->table) old_table = (ht)->table;                                                   \
+            (ht)->table = (__typeof__((ht)->table)) {0};                                                       \
+            sp_da_resize(&(ht)->table, expected);                                                              \
+            for (size_t macro_var(i) = 0; macro_var(i) < old_table.count; ++macro_var(i)) {                    \
+                for (size_t macro_var(j) = 0; macro_var(j) < sp_da_get(&old_table, macro_var(i)).count;        \
+                     ++macro_var(j)) {                                                                         \
+                    sp_da_push(                                                                                \
+                        &(ht)->table.data[(ht)->hash(&(old_table.data[macro_var(i)].data[macro_var(j)].key)) % \
+                                          (ht)->table.capacity],                                               \
+                        old_table.data[macro_var(i)].data[macro_var(j)]);                                      \
+                }                                                                                              \
+                sp_da_free(&(sp_da_get(&old_table, macro_var(i))));                                            \
+            }                                                                                                  \
+            sp_da_free(&old_table);                                                                            \
+        }                                                                                                      \
     } while (0)
 
 /* Points `sp_ht_node_t_ptr` to the `sp_ht_node_t` instance containing the key, or NULL if not found.
@@ -503,23 +507,23 @@ static inline uint32_t sp_ht_streq(const char *const *s1, const char *const *s2)
         }                                                                                               \
     } while (0)
 
-#define sp_ht_insert(ht, __key__, __value__)                                                                                \
-    do {                                                                                                                    \
-        if ((ht)->table.capacity == 0) {                                                                                    \
-            sp_ht_reserve((ht), SP_HT_INIT_CAP);                                                                            \
-        } else if ((double) (ht)->count > (SP_HT_LOAD_CAPACITY * (double) (ht)->table.capacity)) {                          \
-            sp_ht_reserve((ht), (ht)->table.capacity * 2);                                                                  \
-        }                                                                                                                   \
-        size_t macro_var(idx) = (ht)->hash(&(__key__)) % (ht)->table.capacity;                       \
-        for (size_t macro_var(i) = 0; macro_var(i) < (ht)->table.data[macro_var(idx)].count; ++macro_var(i)) {              \
-            if ((ht)->equal(&(__key__), &(ht)->table.data[macro_var(idx)].data[macro_var(i)].key)) { \
-                (ht)->table.data[macro_var(idx)].data[macro_var(i)].value = __value__;                                      \
-                goto macro_var(sp_ht_insert_end);                                                                           \
-            }                                                                                                               \
-        }                                                                                                                   \
-        sp_da_push(&(ht)->table.data[macro_var(idx)], ((sp_ht_node_t(ht)) {.key = __key__, .value = __value__}));           \
-        ++(ht)->count;                                                                                                      \
-        macro_var(sp_ht_insert_end) : break;                                                                                \
+#define sp_ht_insert(ht, __key__, __value__)                                                                      \
+    do {                                                                                                          \
+        if ((ht)->table.capacity == 0) {                                                                          \
+            sp_ht_reserve((ht), SP_HT_INIT_CAP);                                                                  \
+        } else if ((double) (ht)->count > (SP_HT_LOAD_CAPACITY * (double) (ht)->table.capacity)) {                \
+            sp_ht_reserve((ht), (ht)->table.capacity * 2);                                                        \
+        }                                                                                                         \
+        size_t macro_var(idx) = (ht)->hash(&(__key__)) % (ht)->table.capacity;                                    \
+        for (size_t macro_var(i) = 0; macro_var(i) < (ht)->table.data[macro_var(idx)].count; ++macro_var(i)) {    \
+            if ((ht)->equal(&(__key__), &(ht)->table.data[macro_var(idx)].data[macro_var(i)].key)) {              \
+                (ht)->table.data[macro_var(idx)].data[macro_var(i)].value = __value__;                            \
+                goto macro_var(sp_ht_insert_end);                                                                 \
+            }                                                                                                     \
+        }                                                                                                         \
+        sp_da_push(&(ht)->table.data[macro_var(idx)], ((sp_ht_node_t(ht)) {.key = __key__, .value = __value__})); \
+        ++(ht)->count;                                                                                            \
+        macro_var(sp_ht_insert_end) : break;                                                                      \
     } while (0)
 
 #define sp_ht_free(ht)                                                                    \
@@ -531,13 +535,13 @@ static inline uint32_t sp_ht_streq(const char *const *s1, const char *const *s2)
         memset((ht), 0, sizeof(*(ht)));                                                   \
     } while (0)
 
-#define sp_mh_capacity_from_height(height) (((1U) << (height)) - 1) /* 1-based height. */
+#define sp_bt_capacity_from_height(height) (((1U) << (height)) - 1) /* 1-based height. */
 #define sp_bt_node_parent_idx(idx) ((idx - 1) / 2)
 #define sp_bt_node_lchild_idx(idx) ((2 * idx) + 1)
 #define sp_bt_node_rchild_idx(idx) ((2 * idx) + 2)
 
-#define SP_MH_INIT_HEIGHT 3
-#define Sp_Min_Heap(T)    \
+#define SP_BT_INIT_HEIGHT 3
+#define Sp_Heap(T)        \
     struct {              \
         T *data;          \
         size_t count;     \
@@ -545,27 +549,27 @@ static inline uint32_t sp_ht_streq(const char *const *s1, const char *const *s2)
         int (*cmp)(T, T); \
     }
 
-static inline int sp_mh_cmp(const int a, const int b) {
+static inline int sp_lesser_int_cmp(const int a, const int b) {
     return a - b;
 }
 
-#define sp_mh_alloc(heap, __height__) \
-    __sp_mh_alloc((void **) &(heap)->data, &(heap)->height, __height__, sizeof(*(heap)->data))
-static inline void __sp_mh_alloc(void **data, size_t *height, size_t new_height, size_t type_size) {
+#define sp_bt_alloc(heap, __height__) \
+    __sp_bt_alloc((void **) &(heap)->data, &(heap)->height, __height__, sizeof(*(heap)->data))
+static inline void __sp_bt_alloc(void **data, size_t *height, size_t new_height, size_t type_size) {
     if (!data || !height) {
         return;
     }
-    const size_t new_capacity = sp_mh_capacity_from_height(new_height);
+    const size_t new_capacity = sp_bt_capacity_from_height(new_height);
     void *alloc = malloc(new_capacity * type_size);
     if (*data) {
-        memcpy(alloc, *data, ((new_capacity < sp_mh_capacity_from_height(*height) ? new_capacity : sp_mh_capacity_from_height(*height)) * type_size));
+        memcpy(alloc, *data, ((new_capacity < sp_bt_capacity_from_height(*height) ? new_capacity : sp_bt_capacity_from_height(*height)) * type_size));
         free(*data);
     }
     *data = alloc;
     *height = new_height;
 }
 
-#define sp_mh_heapify_up(heap, __idx__)                                                                    \
+#define sp_heapify_up(heap, __idx__)                                                                       \
     do {                                                                                                   \
         size_t idx = (__idx__);                                                                            \
         while (idx != 0 && (heap)->cmp((heap)->data[idx], (heap)->data[sp_bt_node_parent_idx(idx)]) < 0) { \
@@ -574,7 +578,7 @@ static inline void __sp_mh_alloc(void **data, size_t *height, size_t new_height,
         }                                                                                                  \
     } while (0)
 
-#define sp_mh_heapify(heap)                                                                              \
+#define sp_heapify(heap)                                                                                 \
     do {                                                                                                 \
         size_t idx = 0;                                                                                  \
         while (idx < (heap)->count) {                                                                    \
@@ -596,31 +600,31 @@ static inline void __sp_mh_alloc(void **data, size_t *height, size_t new_height,
         }                                                                                                \
     } while (0)
 
-#define sp_mh_top(heap) (heap)->data[0]
+#define sp_heap_top(heap) (heap)->data[0]
 
-#define sp_mh_push(heap, __element__)                                              \
-    do {                                                                           \
-        const __typeof__(__element__) element = (__element__);                     \
-        if (!(heap)->cmp) {                                                        \
-            (heap)->cmp = _Generic(*(heap)->data, int: &sp_mh_cmp, default: NULL); \
-        }                                                                          \
-        if ((heap)->height == 0) {                                                 \
-            sp_mh_alloc((heap), SP_MH_INIT_HEIGHT);                                \
-        } else if ((heap)->count >= sp_mh_capacity_from_height((heap)->height)) {  \
-            sp_mh_alloc((heap), (heap)->height + 1);                               \
-        }                                                                          \
-        (heap)->data[(heap)->count] = element;                                     \
-        sp_mh_heapify_up(heap, (heap)->count++);                                   \
+#define sp_heap_push(heap, __element__)                                                    \
+    do {                                                                                   \
+        const __typeof__(__element__) element = (__element__);                             \
+        if (!(heap)->cmp) {                                                                \
+            (heap)->cmp = _Generic(*(heap)->data, int: &sp_lesser_int_cmp, default: NULL); \
+        }                                                                                  \
+        if ((heap)->height == 0) {                                                         \
+            sp_bt_alloc((heap), SP_BT_INIT_HEIGHT);                                        \
+        } else if ((heap)->count >= sp_bt_capacity_from_height((heap)->height)) {          \
+            sp_bt_alloc((heap), (heap)->height + 1);                                       \
+        }                                                                                  \
+        (heap)->data[(heap)->count] = element;                                             \
+        sp_heapify_up(heap, (heap)->count++);                                              \
     } while (0)
 
-#define sp_mh_pop(heap)                                            \
-    do {                                                           \
-        --(heap)->count;                                           \
-        sp_swap(&sp_mh_top((heap)), &(heap)->data[(heap)->count]); \
-        sp_mh_heapify((heap));                                     \
+#define sp_heap_pop(heap)                                            \
+    do {                                                             \
+        --(heap)->count;                                             \
+        sp_swap(&sp_heap_top((heap)), &(heap)->data[(heap)->count]); \
+        sp_heapify((heap));                                          \
     } while (0)
 
-#define sp_mh_free(heap)        \
+#define sp_heap_free(heap)      \
     do {                        \
         if ((heap)->data) {     \
             free((heap)->data); \

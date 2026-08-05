@@ -290,57 +290,57 @@ static void sptl_test_mh_insert(void **state) {
     (void) state;
 
     // Pushing (ensure heap property)
-    Sp_Min_Heap(int) mh = {0};
-    sp_mh_push(&mh, 7);
-    sp_mh_push(&mh, 5);
+    Sp_Heap(int) mh = {0};
+    sp_heap_push(&mh, 7);
+    sp_heap_push(&mh, 5);
 
-    assert_true(sp_mh_top(&mh) == 5);
+    assert_true(sp_heap_top(&mh) == 5);
     assert_true(mh.data[1] == 7);
 
-    sp_mh_push(&mh, 12);
+    sp_heap_push(&mh, 12);
     assert_true(mh.data[2] == 12);
 
     assert_true(mh.count == 3);
 
     // Popping (ensure heap property)
 
-    sp_mh_pop(&mh);
-    assert_true(sp_mh_top(&mh) == 7);
+    sp_heap_pop(&mh);
+    assert_true(sp_heap_top(&mh) == 7);
 
-    sp_mh_pop(&mh);
-    assert_true(sp_mh_top(&mh) == 12);
+    sp_heap_pop(&mh);
+    assert_true(sp_heap_top(&mh) == 12);
 
-    sp_mh_pop(&mh);
+    sp_heap_pop(&mh);
     assert_true(mh.count == 0);
 
-    sp_mh_free(&mh);
+    sp_heap_free(&mh);
 }
 
 static void sptl_test_mh_expand(void **state) {
     (void) state;
 
-    Sp_Min_Heap(int) mh = {0};
+    Sp_Heap(int) mh = {0};
 
-    sp_mh_push(&mh, 1);
+    sp_heap_push(&mh, 1);
     assert_true(mh.count == 1);
 
 
     assert_true(mh.height == 3);
-    assert_true(sp_mh_capacity_from_height(mh.height) == 7);
+    assert_true(sp_bt_capacity_from_height(mh.height) == 7);
 
     for (size_t i = 2; i <= 7; ++i) {
-        sp_mh_push(&mh, (int) i);
+        sp_heap_push(&mh, (int) i);
     }
 
     assert_true(mh.height == 3);
-    assert_true(sp_mh_capacity_from_height(mh.height) == 7);
+    assert_true(sp_bt_capacity_from_height(mh.height) == 7);
 
-    sp_mh_push(&mh, 8);
+    sp_heap_push(&mh, 8);
 
     assert_true(mh.height == 4);
-    assert_true(sp_mh_capacity_from_height(mh.height) == 15);
+    assert_true(sp_bt_capacity_from_height(mh.height) == 15);
 
-    sp_mh_free(&mh);
+    sp_heap_free(&mh);
 }
 
 static inline Sp_String_Builder uint8_to_binary_str(uint8_t val) {
