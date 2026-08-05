@@ -222,34 +222,17 @@ static inline const char *sp_sb_cstr(Sp_String_Builder *sb) { return sb->data; }
 typedef struct {
     const char *ptr;
     size_t count;
-} Sp_String_Slice;
+} Sp_String_View;
 
 // TODO: C23 can make this macro static const, which turns this macro into a zero cost abstraction;
 // C11 forces this to be created as a stack variable at runtime, which incurs runtime overhead
 #define sp_cstr(literal) (const char *const){ literal }
-#define SP_STR_SLICE_FMT "%.*s"
-#define sp_str_slice_arg(str_slice) (int) (str_slice).count, (str_slice).ptr
+#define SP_SV_FMT "%.*s"
+#define sp_sv_arg(sv) (int) (sv).count, (sv).ptr
 
-/*
- * Generates an `Sp_String_Slice` from C string with a defined length.
- */
-static inline Sp_String_Slice sp_str_slice_from_cstr_ext(const char *str, const size_t count) {
-    return (Sp_String_Slice) {
-        .ptr = str,
-        .count = count,
-    };
-}
+#define sp_cstr_slice(cstr) (Sp_String_View) { .ptr = cstr, .count = strlen(cstr) }
 
-/*
- * Generates an `Sp_String_Slice` from a null-terminated C string.
- */
-static inline Sp_String_Slice sp_str_slice_from_cstr(const char *str) {
-    return sp_str_slice_from_cstr_ext(str, strlen(str));
-}
-
-#define sp_cstr_slice(cstr) (Sp_String_Slice) { .ptr = cstr, .count = strlen(cstr) }
-
-static inline int sp_str_slice_cmp(const Sp_String_Slice *lhs, const Sp_String_Slice *rhs) {
+static inline int sp_sv_cmp(const Sp_String_View *lhs, const Sp_String_View *rhs) {
     assert(lhs);
     assert(rhs);
 
@@ -268,8 +251,8 @@ static inline int sp_str_slice_cmp(const Sp_String_Slice *lhs, const Sp_String_S
     return 0;
 }
 
-static inline uint32_t sp_str_slice_eq(const Sp_String_Slice *lhs, const Sp_String_Slice *rhs) {
-    return !sp_str_slice_cmp(lhs, rhs);
+static inline uint32_t sp_sv_eq(const Sp_String_View *lhs, const Sp_String_View *rhs) {
+    return !sp_sv_cmp(lhs, rhs);
 }
 
 #define Sp_Queue(T)      \
@@ -437,7 +420,7 @@ static inline uint32_t sp_cstr_hash_fnv(const char *const *cstr) {
     return hash_fnv(cstr, strlen(*cstr));
 }
 
-static inline uint32_t sp_str_slice_hash_fnv(const Sp_String_Slice *slice) {
+static inline uint32_t sp_sv_hash_fnv(const Sp_String_View *slice) {
     assert(slice);
     return hash_fnv(&slice->ptr, slice->count);
 }
@@ -475,10 +458,12 @@ static inline uint32_t sp_ht_streq(const char *const *s1, const char *const *s2)
         if (!(ht)->hash) {                                                                                                                       \
             (ht)->hash = _Generic((ht)->table.data->data->key,                                                                                   \
                     const char *: &sp_cstr_hash_fnv,                                                                                             \
-                    Sp_String_Slice: &sp_str_slice_hash_fnv, default: NULL);                                                                     \
+                    Sp_String_View: &sp_sv_hash_fnv, default: NULL);                                                                             \
         }                                                                                                                                        \
         if (!(ht)->equal) {                                                                                                                      \
-            (ht)->equal = _Generic((ht)->table.data->data->key, const char *: &sp_ht_streq, Sp_String_Slice: &sp_str_slice_eq, default: NULL);   \
+            (ht)->equal = _Generic((ht)->table.data->data->key,                                                                                  \
+                    const char *: &sp_ht_streq,                                                                                                  \
+                    Sp_String_View: &sp_sv_eq, default: NULL);                                                                                   \
         }                                                                                                                                        \
         if ((ht)->table.capacity == 0) {                                                                                                         \
             sp_da_resize(&(ht)->table, expected < SP_HT_INIT_CAP ? expected : SP_HT_INIT_CAP);                                                   \

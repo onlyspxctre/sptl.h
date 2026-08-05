@@ -82,16 +82,16 @@ static void sptl_test_sb_appendf(void **state) {
     assert_true(sb.capacity == 0);
 }
 
-static void sptl_test_str_slice(void **state) {
+static void sptl_test_sv(void **state) {
     (void) state;
 
     Sp_String_Builder sb = {0};
     sp_sb_appendf(&sb, "sdf");
 
-    Sp_String_Slice lhs = sp_str_slice_from_cstr(sb.data);
-    Sp_String_Slice rhs = sp_str_slice_from_cstr("sdf");
+    Sp_String_View lhs = sp_cstr_slice(sb.data);
+    Sp_String_View rhs = sp_cstr_slice("sdf");
 
-    assert_true(sp_str_slice_cmp(&lhs, &rhs) == 0);
+    assert_true(sp_sv_cmp(&lhs, &rhs) == 0);
 
     sp_da_free(&sb);
 }
@@ -267,7 +267,7 @@ static void sptl_test_ht_dup_insert(void **state) {
 static void sptl_test_ht_sv_insert(void **state) {
     (void) state;
 
-    Sp_Hash_Table(Sp_String_Slice, int) ht = {0};
+    Sp_Hash_Table(Sp_String_View, int) ht = {0};
     sp_ht_node_t(&ht) *ptr = NULL;
 
     sp_ht_insert(&ht, sp_cstr_slice("Bob"), 5);
@@ -389,7 +389,7 @@ static const struct CMUnitTest sptl_tests[] = {
     cmocka_unit_test(sptl_test_sb_appendf),
 
     /* Sp_String_Slice */
-    cmocka_unit_test(sptl_test_str_slice),
+    cmocka_unit_test(sptl_test_sv),
 
     /* Sp_Linked_List */
     cmocka_unit_test(sptl_test_ll_push_pop_back),
