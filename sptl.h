@@ -494,6 +494,7 @@ static inline uint32_t sp_ht_streq(const char *const *s1, const char *const *s2)
 #define sp_ht_get(ht, __key__, sp_ht_node_t_ptr)                                                        \
     do {                                                                                                \
         if ((sp_ht_node_t_ptr)) {                                                                       \
+            *((sp_ht_node_t_ptr)) = NULL;                                                               \
             size_t macro_var(idx) = (ht)->hash(&(__key__)) % (ht)->table.capacity;                      \
             for (size_t macro_var(i) = 0; macro_var(i) < sp_da_get(&(ht)->table, macro_var(idx)).count; \
                  ++macro_var(i)) {                                                                      \
