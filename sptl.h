@@ -573,7 +573,7 @@ static inline void __sp_bt_alloc(void **data, size_t *height, size_t new_height,
 #define sp_heapify_up(heap, __idx__)                                                                       \
     do {                                                                                                   \
         size_t idx = (__idx__);                                                                            \
-        while (idx != 0 && (heap)->cmp((heap)->data[idx], (heap)->data[sp_bt_node_parent_idx(idx)]) < 0) { \
+        while (idx != 0 && (heap)->cmp((heap)->data[idx], (heap)->data[sp_bt_node_parent_idx(idx)])) {     \
             sp_swap(&(heap)->data[idx], &(heap)->data[sp_bt_node_parent_idx(idx)]);                        \
             idx = sp_bt_node_parent_idx(idx);                                                              \
         }                                                                                                  \
@@ -588,11 +588,11 @@ static inline void __sp_bt_alloc(void **data, size_t *height, size_t new_height,
                 next_idx = sp_bt_node_lchild_idx(idx);                                                   \
             }                                                                                            \
             if (sp_bt_node_rchild_idx(idx) < (heap)->count) {                                            \
-                if ((heap)->cmp((heap)->data[sp_bt_node_rchild_idx(idx)], (heap)->data[next_idx]) < 0) { \
+                if ((heap)->cmp((heap)->data[sp_bt_node_rchild_idx(idx)], (heap)->data[next_idx])) {     \
                     next_idx = sp_bt_node_rchild_idx(idx);                                               \
                 }                                                                                        \
             }                                                                                            \
-            if (next_idx != idx && (heap)->cmp((heap)->data[idx], (heap)->data[next_idx]) > 0) {         \
+            if (next_idx != idx && !(heap)->cmp((heap)->data[idx], (heap)->data[next_idx])) {            \
                 sp_swap(&(heap)->data[idx], &(heap)->data[next_idx]);                                    \
                 idx = next_idx;                                                                          \
             } else {                                                                                     \
