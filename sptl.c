@@ -16,7 +16,7 @@ static void sptl_test_da_resize(void **state) {
     for (size_t i = 0; i < da.capacity; ++i) {
         if (i < da.count) {
             assert_true(da.data[i] == 0);
-        } 
+        }
     }
 
     sp_da_free(&da);
@@ -285,7 +285,6 @@ static void sptl_test_ht_sv_insert(void **state) {
     sp_ht_free(&ht);
 }
 
-
 static void sptl_test_mh_insert(void **state) {
     (void) state;
 
@@ -324,7 +323,6 @@ static void sptl_test_mh_expand(void **state) {
     sp_heap_push(&mh, 1);
     assert_true(mh.count == 1);
 
-
     assert_true(mh.height == 3);
     assert_true(sp_bt_capacity_from_height(mh.height) == 7);
 
@@ -355,8 +353,7 @@ static inline Sp_String_Builder uint8_to_binary_str(uint8_t val) {
             if (state) {
                 sp_sb_appendf(&sp, "%c", '0');
             }
-        }
-        else {
+        } else {
             // bit is 1
             sp_sb_appendf(&sp, "%c", '1');
             state = true;
@@ -377,6 +374,27 @@ static void sptl_test_sb_binary(void **state) {
     assert_true(strcmp(sb.data, "11001") == 0);
 
     sp_da_free(&sb);
+}
+
+static int sptl_test_pair__checkboth(sp_pair_params(pair, int, const char *)) {
+    if (pair_left != 1) {
+        return 0;
+    }
+
+    if (strcmp(pair_right, "fortnite") != 0) {
+        return 0;
+    }
+
+    return 1;
+}
+static void sptl_test_pair(void **state) {
+    (void) state;
+    sp_pair(int, const char *) pair = {
+        1,
+        "fortnite"
+    };
+
+    assert_true(sptl_test_pair__checkboth(sp_pair_arg(pair)));
 }
 
 static const struct CMUnitTest sptl_tests[] = {
@@ -410,6 +428,7 @@ static const struct CMUnitTest sptl_tests[] = {
 
     /* Miscellaneous */
     cmocka_unit_test(sptl_test_sb_binary),
+    cmocka_unit_test(sptl_test_pair),
 
 };
 

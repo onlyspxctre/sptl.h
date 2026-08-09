@@ -95,6 +95,18 @@ __attribute__((format(printf, 2, 3))) static inline int sp_log(Sp_Log_Level log_
         memcpy((b), macro_var(temp), sizeof(*a)); \
     } while (0)
 
+#define sp_pair(Ta, Tb) \
+    struct {            \
+        Ta first;       \
+        Tb second;      \
+    }
+
+#define sp_pair_params(name, Ta, Tb) Ta CONCAT(name, _left), Tb CONCAT(name, _right)
+#define sp_pair_arg(pair) pair.first, pair.second
+
+#define sp_pair_ptr_params(name, Ta, Tb) const Ta *(name)_left, const Ta *(name)_right
+#define sp_pair_ptr_arg(pair) &(pair)->first, &(pair)->right
+
 /*
  * Standard-issue dynamic array.
  *
@@ -570,35 +582,35 @@ static inline void __sp_bt_alloc(void **data, size_t *height, size_t new_height,
     *height = new_height;
 }
 
-#define sp_heapify_up(heap, __idx__)                                                                       \
-    do {                                                                                                   \
-        size_t idx = (__idx__);                                                                            \
-        while (idx != 0 && (heap)->cmp((heap)->data[idx], (heap)->data[sp_bt_node_parent_idx(idx)])) {     \
-            sp_swap(&(heap)->data[idx], &(heap)->data[sp_bt_node_parent_idx(idx)]);                        \
-            idx = sp_bt_node_parent_idx(idx);                                                              \
-        }                                                                                                  \
+#define sp_heapify_up(heap, __idx__)                                                                   \
+    do {                                                                                               \
+        size_t idx = (__idx__);                                                                        \
+        while (idx != 0 && (heap)->cmp((heap)->data[idx], (heap)->data[sp_bt_node_parent_idx(idx)])) { \
+            sp_swap(&(heap)->data[idx], &(heap)->data[sp_bt_node_parent_idx(idx)]);                    \
+            idx = sp_bt_node_parent_idx(idx);                                                          \
+        }                                                                                              \
     } while (0)
 
-#define sp_heapify(heap)                                                                                 \
-    do {                                                                                                 \
-        size_t idx = 0;                                                                                  \
-        while (idx < (heap)->count) {                                                                    \
-            size_t next_idx = idx;                                                                       \
-            if (sp_bt_node_lchild_idx(idx) < (heap)->count) {                                            \
-                next_idx = sp_bt_node_lchild_idx(idx);                                                   \
-            }                                                                                            \
-            if (sp_bt_node_rchild_idx(idx) < (heap)->count) {                                            \
-                if ((heap)->cmp((heap)->data[sp_bt_node_rchild_idx(idx)], (heap)->data[next_idx])) {     \
-                    next_idx = sp_bt_node_rchild_idx(idx);                                               \
-                }                                                                                        \
-            }                                                                                            \
-            if (next_idx != idx && !(heap)->cmp((heap)->data[idx], (heap)->data[next_idx])) {            \
-                sp_swap(&(heap)->data[idx], &(heap)->data[next_idx]);                                    \
-                idx = next_idx;                                                                          \
-            } else {                                                                                     \
-                break;                                                                                   \
-            }                                                                                            \
-        }                                                                                                \
+#define sp_heapify(heap)                                                                             \
+    do {                                                                                             \
+        size_t idx = 0;                                                                              \
+        while (idx < (heap)->count) {                                                                \
+            size_t next_idx = idx;                                                                   \
+            if (sp_bt_node_lchild_idx(idx) < (heap)->count) {                                        \
+                next_idx = sp_bt_node_lchild_idx(idx);                                               \
+            }                                                                                        \
+            if (sp_bt_node_rchild_idx(idx) < (heap)->count) {                                        \
+                if ((heap)->cmp((heap)->data[sp_bt_node_rchild_idx(idx)], (heap)->data[next_idx])) { \
+                    next_idx = sp_bt_node_rchild_idx(idx);                                           \
+                }                                                                                    \
+            }                                                                                        \
+            if (next_idx != idx && !(heap)->cmp((heap)->data[idx], (heap)->data[next_idx])) {        \
+                sp_swap(&(heap)->data[idx], &(heap)->data[next_idx]);                                \
+                idx = next_idx;                                                                      \
+            } else {                                                                                 \
+                break;                                                                               \
+            }                                                                                        \
+        }                                                                                            \
     } while (0)
 
 #define sp_heap_top(heap) (heap)->data[0]
