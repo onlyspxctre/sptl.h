@@ -377,11 +377,13 @@ static void sptl_test_sb_binary(void **state) {
 }
 
 static int sptl_test_pair__checkboth(sp_pair_params(pair, int, const char *)) {
-    if (pair_left != 1) {
+    Sp_Pair(int, const char *) pair = sp_pair_from_arg(pair);
+
+    if (pair.left != 1) {
         return 0;
     }
 
-    if (strcmp(pair_right, "fortnite") != 0) {
+    if (strcmp(pair.right, "fortnite") != 0) {
         return 0;
     }
 
@@ -389,7 +391,7 @@ static int sptl_test_pair__checkboth(sp_pair_params(pair, int, const char *)) {
 }
 static void sptl_test_pair(void **state) {
     (void) state;
-    sp_pair(int, const char *) pair = {
+    Sp_Pair(int, const char *) pair = {
         1,
         "fortnite"
     };
