@@ -267,7 +267,12 @@ static void sptl_test_ht_dup_insert(void **state) {
 static void sptl_test_ht_sv_insert(void **state) {
     (void) state;
 
+    char str[] = "Bob Alice Greg";
     Sp_Hash_Table(Sp_String_View, int) ht = {0};
+    Sp_String_View sv = {
+        .ptr = str,
+        .count = 3,
+    };
     sp_ht_node_t(&ht) *ptr = NULL;
 
     sp_ht_insert(&ht, sp_cstr_slice("Bob"), 5);
@@ -275,11 +280,11 @@ static void sptl_test_ht_sv_insert(void **state) {
     assert_true(ptr->value == 5);
 
     sp_ht_insert(&ht, sp_cstr_slice("Bob"), 7);
-    sp_ht_get(&ht, sp_cstr_slice("Bob"), &ptr);
+    sp_ht_get(&ht, sv, &ptr);
     assert_true(ptr->value == 7);
 
-    sp_ht_insert(&ht, sp_cstr_slice("Bob"), 9);
-    sp_ht_get(&ht, sp_cstr_slice("Bob"), &ptr);
+    sp_ht_insert(&ht, sv, 9);
+    sp_ht_get(&ht, sv, &ptr);
     assert_true(ptr->value == 9);
 
     sp_ht_free(&ht);
