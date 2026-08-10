@@ -108,9 +108,9 @@ __attribute__((format(printf, 2, 3))) static inline int sp_log(Sp_Log_Level log_
 #define sp_pair_arg(pair) pair.left, pair.right
 
 /* Rebind an Sp_Pair passed as a function argument into its own structure. */
-#define sp_pair_from_arg(name) { .left = CONCAT(name, _left), .right = CONCAT(name, _right) }
+#define sp_pair_from_arg(name) {.left = CONCAT(name, _left), .right = CONCAT(name, _right)}
 
-#define sp_pair_ptr_params(name, Ta, Tb) const Ta *(name)_left, const Ta *(name)_right
+#define sp_pair_ptr_params(name, Ta, Tb) const Ta *(name) _left, const Ta *(name) _right
 #define sp_pair_ptr_arg(pair) &(pair)->first, &(pair)->right
 
 /*
