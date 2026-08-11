@@ -88,6 +88,18 @@ __attribute__((format(printf, 2, 3))) static inline int sp_log(Sp_Log_Level log_
     return count;
 }
 
+__attribute__((format(printf, 2, 3))) static inline void sp_die(int code, const char *format, ...) {
+    va_list arg;
+
+    va_start(arg, format);
+
+    sp_log(SP_ERROR, format, arg);
+
+    va_end(arg);
+
+    exit(code);
+}
+
 #define sp_swap(a, b)                             \
     do {                                          \
         char macro_var(temp)[sizeof(*a)];         \
