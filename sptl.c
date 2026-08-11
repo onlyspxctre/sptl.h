@@ -404,6 +404,36 @@ static void sptl_test_pair(void **state) {
     assert_true(sptl_test_pair__checkboth(sp_pair_arg(pair)));
 }
 
+static void sptl_test_bitset(void **state) {
+    (void) state;
+
+    Sp_Bitset bitset = {0};
+
+    sp_bitset_set(&bitset, 0);
+    sp_bitset_set(&bitset, 12);
+    sp_bitset_set(&bitset, 37);
+    sp_bitset_set(&bitset, 64);
+
+    assert_true(sp_bitset_check(&bitset, 0));
+    assert_true(sp_bitset_check(&bitset, 12));
+    assert_true(sp_bitset_check(&bitset, 37));
+    assert_true(sp_bitset_check(&bitset, 64));
+
+    sp_bitset_reset(&bitset, 0);
+    sp_bitset_reset(&bitset, 12);
+
+    sp_bitset_set(&bitset, 2);
+    sp_bitset_set(&bitset, 5);
+
+    assert_true(!sp_bitset_check(&bitset, 0));
+    assert_true(!sp_bitset_check(&bitset, 12));
+
+    assert_true(sp_bitset_check(&bitset, 2));
+    assert_true(sp_bitset_check(&bitset, 5));
+
+    sp_bitset_free(&bitset);
+}
+
 static const struct CMUnitTest sptl_tests[] = {
     /* Sp_Dynamic_Array */
     cmocka_unit_test(sptl_test_da_resize),
@@ -436,6 +466,7 @@ static const struct CMUnitTest sptl_tests[] = {
     /* Miscellaneous */
     cmocka_unit_test(sptl_test_sb_binary),
     cmocka_unit_test(sptl_test_pair),
+    cmocka_unit_test(sptl_test_bitset),
 
 };
 

@@ -2,6 +2,7 @@
 #define SPTL_H
 
 #include <assert.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -553,6 +554,64 @@ static inline uint32_t sp_ht_streq(const char *const *s1, const char *const *s2)
         sp_da_free(&(ht)->table);                                                         \
         memset((ht), 0, sizeof(*(ht)));                                                   \
     } while (0)
+
+typedef struct {
+    Sp_Dynamic_Array(uint8_t) bits;
+} Sp_Bitset;
+
+static inline uint8_t sp_bitset_get_bitmask(size_t idx) {
+    switch (idx % CHAR_BIT) {
+        case 0:
+            return 0x80;
+        case 1:
+            return 0x40;
+        case 2:
+            return 0x20;
+        case 3:
+            return 0x10;
+        case 4:
+            return 0x08;
+        case 5:
+            return 0x04;
+        case 6:
+            return 0x02;
+        case 7:
+            return 0x01;
+        default:
+            sp_unreachable();
+    }
+}
+
+/* Logical ORs all other bits except for desired bit with 0 (keep constant).
+ * The selected bit will be ORed with 1, and thus enabled. */
+static inline void sp_bitset_set(Sp_Bitset *bitset, size_t idx) {
+    sp_da_resize(&bitset->bits, (idx / CHAR_BIT) + 1);
+    bitset->bits.data[idx / CHAR_BIT] |= sp_bitset_get_bitmask(idx);
+}
+
+/* Logical ANDs all other bits except for desired bit with 1 (keep constant).
+ * The selected bit will be ANDed with 0, and thus disabled. */
+static inline void sp_bitset_reset(Sp_Bitset *bitset, size_t idx) {
+    if (idx / CHAR_BIT >= bitset->bits.count) {
+        return;
+    }
+    bitset->bits.data[idx / CHAR_BIT] &= (~sp_bitset_get_bitmask(idx));
+}
+
+/* Logical ANDs all other bits except for desired bit with 0 (disable).
+ * The selected bit will remain as is, and thus will return as a boolean.
+ * This is immutable. */
+static inline int sp_bitset_check(const Sp_Bitset *bitset, size_t idx) {
+    if (idx / CHAR_BIT >= bitset->bits.count) {
+        return 0;
+    }
+
+    return bitset->bits.data[idx / CHAR_BIT] & sp_bitset_get_bitmask(idx);
+}
+
+static inline void sp_bitset_free(Sp_Bitset *bitset) {
+    sp_da_free(&bitset->bits);
+}
 
 #define sp_bt_capacity_from_height(height) (((1U) << (height)) - 1) /* 1-based height. */
 #define sp_bt_node_parent_idx(idx) ((idx - 1) / 2)
