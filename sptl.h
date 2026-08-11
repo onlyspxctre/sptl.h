@@ -93,7 +93,7 @@ __attribute__((format(printf, 2, 3))) static inline void sp_die(int code, const 
 
     va_start(arg, format);
 
-    sp_log(SP_ERROR, format, arg);
+    vfprintf(stderr, format, arg);
 
     va_end(arg);
 
