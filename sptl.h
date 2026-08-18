@@ -15,7 +15,7 @@
 #else
 #define SPExtern __declspec(dllimport)
 #endif
-#elif defined(__linux__)
+#else
 #define SPExtern
 #endif
 
