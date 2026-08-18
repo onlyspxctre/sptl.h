@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(SP_STATIC)
 #if defined(SP_WIN32_EXPORT)
 #define SPExtern __declspec(dllexport)
 #else
