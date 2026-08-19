@@ -124,8 +124,8 @@ __attribute__((format(printf, 2, 3))) static inline void sp_die(int code, const 
 /* Rebind an Sp_Pair passed as a function argument into its own structure. */
 #define sp_pair_from_arg(name) {.left = CONCAT(name, _left), .right = CONCAT(name, _right)}
 
-#define sp_pair_ptr_params(name, Ta, Tb) const Ta *(name) _left, const Ta *(name) _right
-#define sp_pair_ptr_arg(pair) &(pair)->first, &(pair)->right
+#define sp_pair_ptr_params(name, Ta, Tb) Ta *CONCAT(name, _left), Tb *CONCAT(name, _right)
+#define sp_pair_ptr_arg(pair) &(pair)->left, &(pair)->right
 
 /*
  * Standard-issue dynamic array.
