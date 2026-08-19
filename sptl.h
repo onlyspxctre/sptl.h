@@ -103,6 +103,7 @@ __attribute__((format(printf, 2, 3))) static inline void sp_die(int code, const 
 
 #define sp_swap(a, b)                             \
     do {                                          \
+        if (a == b) break;                        \
         char macro_var(temp)[sizeof(*a)];         \
         memcpy(macro_var(temp), (a), sizeof(*a)); \
         memcpy((a), (b), sizeof(*a));             \
