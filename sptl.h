@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #if defined(_WIN32) && !defined(SP_STATIC)
 #if defined(SP_WIN32_EXPORT)
@@ -230,9 +231,14 @@ typedef Sp_Dynamic_Array(char) Sp_String_Builder;
 __attribute__((format(printf, 2, 3))) static inline int sp_sb_appendf(Sp_String_Builder *sb, const char *format, ...) {
     va_list arg;
 
+    errno = 0;
     va_start(arg, format);
     int count = vsnprintf(NULL, 0, format, arg);
     va_end(arg);
+
+    if (count < 0) {
+        sp_die(1, "sp_sb_appendf: vsnprintf to determine count failed (%s)", strerror(errno));
+    }
 
     sp_da_reserve(sb, sb->count + (size_t) count + 1); // allocate enough room for null terminator to
 
