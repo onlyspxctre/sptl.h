@@ -2,13 +2,13 @@
 #define SPTL_H
 
 #include <assert.h>
+#include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 
 #if defined(_WIN32) && !defined(SP_STATIC)
 #if defined(SP_WIN32_EXPORT)
@@ -641,7 +641,10 @@ static inline void sp_bitset_free(Sp_Bitset *bitset) {
     sp_da_free(&bitset->bits);
 }
 
-#define sp_bt_capacity_from_height(height) (((1U) << (height)) - 1) /* 1-based height. */
+#define sp_bt_capacity_from_height(height)   \
+    ((height) >= (sizeof(size_t) * CHAR_BIT) \
+         ? SIZE_MAX                          \
+         : ((((size_t) 1) << (height)) - 1)) /* 1-based height. */
 #define sp_bt_node_parent_idx(idx) ((idx - 1) / 2)
 #define sp_bt_node_lchild_idx(idx) ((2 * idx) + 1)
 #define sp_bt_node_rchild_idx(idx) ((2 * idx) + 2)
@@ -714,7 +717,6 @@ static inline void __sp_bt_alloc(void **data, size_t *height, size_t new_height,
  * NOTE: `sp_heap_top()` is unguarded; calling this on an empty/invalid heap is undefined behavior.
  */
 #define sp_heap_top(heap) (heap)->data[0]
-
 
 #define sp_heap_push(heap, __element__)                                                    \
     do {                                                                                   \
