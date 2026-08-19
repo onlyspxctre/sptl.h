@@ -243,12 +243,30 @@ __attribute__((format(printf, 2, 3))) static inline int sp_sb_appendf(Sp_String_
         sp_die(1, "sp_sb_appendf: vsnprintf to determine count failed (%s)", strerror(errno));
     }
 
-    sp_da_reserve(sb, sb->count + (size_t) count + 1); // allocate enough room for null terminator to
+    const size_t req = sb->count + (size_t) count + 1; // room for null terminator
 
-    char *dest = sb->data + sb->count;
-    va_start(arg, format);
-    vsnprintf(dest, (size_t) count + 1, format, arg);
-    va_end(arg);
+    if (req > sb->capacity) {
+        // Growing may realloc and move sb->data, so a format argument that
+        // aliases the buffer (e.g. appending a view of sb onto itself) would
+        // dangle. Format into a temporary first, then append after the move.
+        char *tmp = malloc((size_t) count + 1);
+        assert(tmp);
+
+        va_start(arg, format);
+        vsnprintf(tmp, (size_t) count + 1, format, arg);
+        va_end(arg);
+
+        sp_da_reserve(sb, req);
+        memcpy(sb->data + sb->count, tmp, (size_t) count + 1);
+        free(tmp);
+    } else {
+        // dest starts at sb->count, past any source that aliases [0, count),
+        // so the in-place write cannot overlap its own input.
+        char *dest = sb->data + sb->count;
+        va_start(arg, format);
+        vsnprintf(dest, (size_t) count + 1, format, arg);
+        va_end(arg);
+    }
 
     sb->count += (size_t) count; // increased allocated count but not include null terminator
 
@@ -273,7 +291,7 @@ typedef struct {
 #define sp_cstr(literal) \
     (const char *const) { literal }
 #define SP_SV_FMT "%.*s"
-#define sp_sv_arg(sv) (int) (sv).count, (sv).ptr
+#define sp_sv_arg(sv) ((int) ((sv).count > INT32_MAX ? INT32_MAX : (sv).count)), (sv).ptr
 
 #define sp_cstr_slice(cstr) \
     (Sp_String_View) { .ptr = cstr, .count = strlen(cstr) }

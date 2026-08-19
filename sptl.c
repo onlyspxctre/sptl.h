@@ -93,6 +93,11 @@ static void sptl_test_sv(void **state) {
 
     assert_true(sp_sv_cmp(&lhs, &rhs) == 0);
 
+    sp_sb_appendf(&sb, SP_SV_FMT, sp_sv_arg(lhs));
+    lhs = sp_cstr_slice(sb.data);
+    rhs = sp_cstr_slice("sdfsdf");
+    assert_true(sp_sv_cmp(&lhs, &rhs) == 0);
+
     sp_da_free(&sb);
 }
 
