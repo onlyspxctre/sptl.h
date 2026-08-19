@@ -129,15 +129,15 @@ static void sptl_test_ll_push_pop_front(void **state) {
 
     Sp_Linked_List(int) ll = {0};
 
-    sp_ll_push_back(&ll, 1);
-    assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 1);
-    assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 1);
+    sp_ll_push_front(&ll, 3);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 3);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 3);
 
-    sp_ll_push_back(&ll, 2);
-    assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 1);
-    assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 2);
+    sp_ll_push_front(&ll, 2);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 2);
+    assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 3);
 
-    sp_ll_push_back(&ll, 3);
+    sp_ll_push_front(&ll, 1);
     assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 1);
     assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 3);
 
@@ -149,11 +149,9 @@ static void sptl_test_ll_push_pop_front(void **state) {
     assert_true(*sp_ll_node_unwrap(&ll, ll.head) == 3);
     assert_true(*sp_ll_node_unwrap(&ll, ll.tail) == 3);
 
-    sp_ll_pop_front(&ll);
+    sp_ll_free(&ll); // free on non-empty list
     assert_true(ll.head == NULL);
     assert_true(ll.tail == NULL);
-
-    sp_ll_free(&ll);
 }
 static void sptl_test_queue_pop_overflow(void **state) {
     (void) state;
