@@ -61,10 +61,6 @@ __attribute__((format(printf, 2, 3))) static inline int sp_log(Sp_Log_Level log_
     FILE *fd;
 
     switch (log_level) {
-        case SP_INFO:
-            fd = stdout;
-            fprintf(fd, "[" KGRN "INFO" KNRM "] ");
-            break;
         case SP_VERBOSE:
             fd = stdout;
             __fprintf_verbose(fd, "[" KCYN "INFO" KNRM "] ");
@@ -76,6 +72,11 @@ __attribute__((format(printf, 2, 3))) static inline int sp_log(Sp_Log_Level log_
         case SP_ERROR:
             fd = stderr;
             fprintf(fd, "[" KRED "ERROR" KNRM "] ");
+            break;
+        case SP_INFO:
+        default:
+            fd = stdout;
+            fprintf(fd, "[" KGRN "INFO" KNRM "] ");
             break;
     }
 
