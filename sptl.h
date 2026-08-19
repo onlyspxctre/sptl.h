@@ -361,32 +361,32 @@ typedef struct sp_ll_node {
 /* Returns a pointer of `sp_ll_type(ll)` to the underlying data stored at `sp_ll_node* node`. */
 #define sp_ll_node_unwrap(ll, node) ((sp_ll_type(ll) *) (node)->data)
 
-#define sp_ll_push_back(ll, element)                                              \
-    do {                                                                          \
-        if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */ \
-            (ll)->head = calloc(1, sizeof(*(ll)->head) + sizeof((ll)->type));        \
-            *sp_ll_node_unwrap(ll, (ll)->head) = (element);                       \
-            (ll)->tail = (ll)->head;                                              \
-        } else {                                                                  \
-            (ll)->tail->next = calloc(1, sizeof(*(ll)->tail) + sizeof((ll)->type));  \
-            (ll)->tail->next->prev = (ll)->tail;                                  \
-            (ll)->tail = (ll)->tail->next;                                        \
-            *sp_ll_node_unwrap(ll, (ll)->tail) = (element);                       \
-        }                                                                         \
+#define sp_ll_push_back(ll, element)                                                \
+    do {                                                                            \
+        if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */   \
+            (ll)->head = calloc(1, sizeof(*(ll)->head) + sizeof((ll)->type));       \
+            *sp_ll_node_unwrap(ll, (ll)->head) = (element);                         \
+            (ll)->tail = (ll)->head;                                                \
+        } else {                                                                    \
+            (ll)->tail->next = calloc(1, sizeof(*(ll)->tail) + sizeof((ll)->type)); \
+            (ll)->tail->next->prev = (ll)->tail;                                    \
+            (ll)->tail = (ll)->tail->next;                                          \
+            *sp_ll_node_unwrap(ll, (ll)->tail) = (element);                         \
+        }                                                                           \
     } while (0)
 
-#define sp_ll_push_front(ll, element)                                             \
-    do {                                                                          \
-        if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */ \
-            (ll)->head = calloc(1, sizeof(*(ll)->head) + sizeof((ll)->type));                                              \
-            *sp_ll_node_unwrap(ll, (ll)->head) = (element);                                                            \
-            (ll)->tail = (ll)->head;                                              \
-        } else {                                                                  \
-            (ll)->head->prev = calloc(1, sizeof(*(ll)->head) + sizeof((ll)->type));                                        \
-            (ll)->head->prev->next = (ll)->head;                                                                       \
-            (ll)->head = (ll)->head->prev;                                                                             \
-            *sp_ll_node_unwrap(ll, (ll)->head) = (element);                       \
-        }                                                                         \
+#define sp_ll_push_front(ll, element)                                               \
+    do {                                                                            \
+        if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */   \
+            (ll)->head = calloc(1, sizeof(*(ll)->head) + sizeof((ll)->type));       \
+            *sp_ll_node_unwrap(ll, (ll)->head) = (element);                         \
+            (ll)->tail = (ll)->head;                                                \
+        } else {                                                                    \
+            (ll)->head->prev = calloc(1, sizeof(*(ll)->head) + sizeof((ll)->type)); \
+            (ll)->head->prev->next = (ll)->head;                                    \
+            (ll)->head = (ll)->head->prev;                                          \
+            *sp_ll_node_unwrap(ll, (ll)->head) = (element);                         \
+        }                                                                           \
     } while (0)
 
 // TODO: Make sp_ll_pop use a common backend for common functions

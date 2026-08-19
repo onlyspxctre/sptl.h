@@ -396,7 +396,7 @@ static void sptl_test_pair(void **state) {
     (void) state;
     Sp_Pair(int, const char *) pair = {
         1,
-        "fortnite"
+        "fortnite",
     };
 
     assert_true(sptl_test_pair__checkboth(sp_pair_arg(pair)));
