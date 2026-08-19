@@ -148,7 +148,10 @@ static inline void __sp_da_alloc(void **data, size_t *capacity, size_t new_capac
     if (!data || !capacity) {
         return;
     }
+
     void *alloc = malloc(new_capacity * type_size);
+    assert(alloc);
+
     if (*data) {
         memcpy(alloc, *data, ((new_capacity < *capacity ? new_capacity : *capacity) * type_size));
         free(*data);
@@ -192,6 +195,7 @@ static inline void __sp_da_alloc(void **data, size_t *capacity, size_t new_capac
 
 #define sp_da_pop(da)                                                  \
     do {                                                               \
+        if (!(da)->data || (da)->count == 0) break;                    \
         if ((da)->count > 0)                                           \
             --(da)->count;                                             \
         (da)->data[(da)->count] = 0;                                   \
@@ -527,6 +531,7 @@ static inline uint32_t sp_ht_streq(const char *const *s1, const char *const *s2)
     do {                                                                                                \
         if ((sp_ht_node_t_ptr)) {                                                                       \
             *((sp_ht_node_t_ptr)) = NULL;                                                               \
+            if (!(ht)->hash) break;                                                                     \
             size_t macro_var(idx) = (ht)->hash(&(__key__)) % (ht)->table.capacity;                      \
             for (size_t macro_var(i) = 0; macro_var(i) < sp_da_get(&(ht)->table, macro_var(idx)).count; \
                  ++macro_var(i)) {                                                                      \
@@ -650,8 +655,12 @@ static inline void __sp_bt_alloc(void **data, size_t *height, size_t new_height,
     if (!data || !height) {
         return;
     }
+
     const size_t new_capacity = sp_bt_capacity_from_height(new_height);
+
     void *alloc = malloc(new_capacity * type_size);
+    assert(alloc);
+
     if (*data) {
         memcpy(alloc, *data, ((new_capacity < sp_bt_capacity_from_height(*height) ? new_capacity : sp_bt_capacity_from_height(*height)) * type_size));
         free(*data);
@@ -691,7 +700,11 @@ static inline void __sp_bt_alloc(void **data, size_t *height, size_t new_height,
         }                                                                                            \
     } while (0)
 
+/*
+ * NOTE: `sp_heap_top()` is unguarded; calling this on an empty/invalid heap is undefined behavior.
+ */
 #define sp_heap_top(heap) (heap)->data[0]
+
 
 #define sp_heap_push(heap, __element__)                                                    \
     do {                                                                                   \
@@ -710,6 +723,7 @@ static inline void __sp_bt_alloc(void **data, size_t *height, size_t new_height,
 
 #define sp_heap_pop(heap)                                            \
     do {                                                             \
+        if (!(heap)->data || (heap)->count == 0) break;              \
         --(heap)->count;                                             \
         sp_swap(&sp_heap_top((heap)), &(heap)->data[(heap)->count]); \
         sp_heapify((heap));                                          \
