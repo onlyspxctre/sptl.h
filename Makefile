@@ -5,5 +5,7 @@ CFLAGS := -Wall -Wextra -std=c11 -pedantic -g
 
 LIBS := -lcmocka
 
-build:
-	$(CC) $(CFLAGS) -o sptl sptl.c $(LIBS)
+all: sptl
+
+sptl: sptl.c sptl.h
+	$(CC) $(CFLAGS) -o $@ sptl.c $(LIBS)
