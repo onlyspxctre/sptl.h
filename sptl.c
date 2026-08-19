@@ -171,6 +171,12 @@ static void sptl_test_queue_pop_overflow(void **state) {
     assert_true(queue.count == 0);
     assert_true(sp_queue_peek(&queue) == 0);
 
+    sp_queue_push(&queue, 4);
+    assert_true(sp_queue_peek(&queue) == 4);
+
+    sp_queue_push(&queue, 5);
+    assert_true(sp_queue_peek(&queue) == 4);
+
     sp_queue_free(&queue);
     assert_true(queue.data == NULL);
     assert_true(queue.head == 0);

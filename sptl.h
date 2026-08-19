@@ -328,11 +328,12 @@ static inline uint32_t sp_sv_eq(const Sp_String_View *lhs, const Sp_String_View 
         ++(queue)->count;                                                                   \
     } while (0)
 
-#define sp_queue_pop(queue)     \
-    do {                        \
-        ++(queue)->head;        \
-        if ((queue)->count > 0) \
-            --(queue)->count;   \
+#define sp_queue_pop(queue)       \
+    do {                          \
+        if ((queue)->count > 0) { \
+            ++(queue)->head;      \
+            --(queue)->count;     \
+        }                         \
     } while (0)
 
 #define sp_queue_peek(queue) ((queue)->count == 0 ? 0 : (queue)->data[(queue)->head % (queue)->capacity])
