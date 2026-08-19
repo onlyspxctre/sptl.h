@@ -210,6 +210,7 @@ static inline void __sp_da_alloc(void **data, size_t *capacity, size_t new_capac
  */
 #define sp_da_clear(da)                                              \
     do {                                                             \
+        if (!(da)->data || (da)->count == 0) break;                  \
         memset((da)->data, 0, (da)->capacity * sizeof(*(da)->data)); \
         (da)->count = 0;                                             \
     } while (0)
