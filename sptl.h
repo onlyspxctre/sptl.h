@@ -273,7 +273,11 @@ static inline int sp_sv_cmp(const Sp_String_View *lhs, const Sp_String_View *rhs
     assert(lhs);
     assert(rhs);
 
-    int res = memcmp(lhs->ptr, rhs->ptr, lhs->count < rhs->count ? lhs->count : rhs->count);
+    int res = 0;
+    const size_t min = lhs->count < rhs->count ? lhs->count : rhs->count;
+    if (min > 0) {
+        res = memcmp(lhs->ptr, rhs->ptr, min);
+    }
 
     if (res != 0) {
         return res;
@@ -443,7 +447,7 @@ typedef struct sp_ll_node {
 
 static inline uint32_t hash_fnv(const char *const *data, const size_t bytes) {
     assert(data);
-    assert(*data);
+
     uint32_t hash = FNV_OFFSET_BASIS_32;
 
     for (size_t i = 0; i < bytes; ++i) {
