@@ -83,7 +83,7 @@ __attribute__((format(printf, 2, 3))) static inline int sp_log(Sp_Log_Level log_
     int count = vfprintf(fd, format, arg);
 
     va_end(arg);
-    putchar('\n');
+    fputc('\n', fd);
 
     return count;
 }
