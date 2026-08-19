@@ -597,7 +597,7 @@ static inline uint8_t sp_bitset_get_bitmask(size_t idx) {
 /* Logical ORs all other bits except for desired bit with 0 (keep constant).
  * The selected bit will be ORed with 1, and thus enabled. */
 static inline void sp_bitset_set(Sp_Bitset *bitset, size_t idx) {
-    sp_da_resize(&bitset->bits, (idx / CHAR_BIT) + 1);
+    if (bitset->bits.count < (idx / CHAR_BIT) + 1) sp_da_resize(&bitset->bits, (idx / CHAR_BIT) + 1);
     bitset->bits.data[idx / CHAR_BIT] |= sp_bitset_get_bitmask(idx);
 }
 

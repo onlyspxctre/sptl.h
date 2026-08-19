@@ -408,9 +408,9 @@ static void sptl_test_bitset(void **state) {
     Sp_Bitset bitset = {0};
 
     sp_bitset_set(&bitset, 0);
-    sp_bitset_set(&bitset, 12);
-    sp_bitset_set(&bitset, 37);
     sp_bitset_set(&bitset, 64);
+    sp_bitset_set(&bitset, 37);
+    sp_bitset_set(&bitset, 12);
 
     assert_true(sp_bitset_check(&bitset, 0));
     assert_true(sp_bitset_check(&bitset, 12));
@@ -460,11 +460,13 @@ static const struct CMUnitTest sptl_tests[] = {
     /* Sp_Min_Heap */
     cmocka_unit_test(sptl_test_mh_insert),
     cmocka_unit_test(sptl_test_mh_expand),
+    
+    /* Sp_Bitset */
+    cmocka_unit_test(sptl_test_bitset),
 
     /* Miscellaneous */
     cmocka_unit_test(sptl_test_sb_binary),
     cmocka_unit_test(sptl_test_pair),
-    cmocka_unit_test(sptl_test_bitset),
 
 };
 
