@@ -201,7 +201,7 @@ static inline void __sp_da_alloc(void **data, size_t *capacity, size_t new_capac
         if (!(da)->data || (da)->count == 0) break;                    \
         if ((da)->count > 0)                                           \
             --(da)->count;                                             \
-        (da)->data[(da)->count] = 0;                                   \
+        (da)->data[(da)->count] = (__typeof__(*(da)->data)){0};        \
         if ((da)->count < (size_t) (0.25 * (double) (da)->capacity)) { \
             sp_da_alloc(da, (da)->capacity / 2);                       \
         }                                                              \
@@ -371,7 +371,7 @@ static inline uint32_t sp_sv_eq(const Sp_String_View *lhs, const Sp_String_View 
         }                         \
     } while (0)
 
-#define sp_queue_peek(queue) ((queue)->count == 0 ? (__typeof__(*(queue)->data){0}) : (queue)->data[(queue)->head % (queue)->capacity])
+#define sp_queue_peek(queue) ((queue)->count == 0 ? ((__typeof__(*(queue)->data)){0}) : (queue)->data[(queue)->head % (queue)->capacity])
 
 #define sp_queue_free(queue)                  \
     do {                                      \
