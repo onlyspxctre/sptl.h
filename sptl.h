@@ -121,7 +121,7 @@ __attribute__((format(printf, 2, 3))) static inline void sp_die(int code, const 
 #define sp_pair_params(name, Ta, Tb) Ta CONCAT(name, _left), Tb CONCAT(name, _right)
 
 /* Used to supply an Sp_Pair type as a function argument. */
-#define sp_pair_arg(pair) pair.left, pair.right
+#define sp_pair_arg(pair) ((pair).left, (pair).right)
 
 /* Rebind an Sp_Pair passed as a function argument into its own structure. */
 #define sp_pair_from_arg(name) {.left = CONCAT(name, _left), .right = CONCAT(name, _right)}
@@ -666,9 +666,9 @@ static inline void sp_bitset_free(Sp_Bitset *bitset) {
     ((height) >= (sizeof(size_t) * CHAR_BIT) \
          ? SIZE_MAX                          \
          : ((((size_t) 1) << (height)) - 1)) /* 1-based height. */
-#define sp_bt_node_parent_idx(idx) ((idx - 1) / 2)
-#define sp_bt_node_lchild_idx(idx) ((2 * idx) + 1)
-#define sp_bt_node_rchild_idx(idx) ((2 * idx) + 2)
+#define sp_bt_node_parent_idx(idx) (((idx) - 1) / 2)
+#define sp_bt_node_lchild_idx(idx) ((2 * (idx)) + 1)
+#define sp_bt_node_rchild_idx(idx) ((2 * (idx)) + 2)
 
 #define SP_BT_INIT_HEIGHT 3
 #define Sp_Heap(T)        \
