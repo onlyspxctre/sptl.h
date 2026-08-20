@@ -371,7 +371,7 @@ static inline uint32_t sp_sv_eq(const Sp_String_View *lhs, const Sp_String_View 
         }                         \
     } while (0)
 
-#define sp_queue_peek(queue) ((queue)->count == 0 ? 0 : (queue)->data[(queue)->head % (queue)->capacity])
+#define sp_queue_peek(queue) ((queue)->count == 0 ? (__typeof__(*(queue)->data){0}) : (queue)->data[(queue)->head % (queue)->capacity])
 
 #define sp_queue_free(queue)                  \
     do {                                      \
