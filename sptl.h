@@ -537,7 +537,7 @@ static inline uint32_t sp_ht_streq(const char *const *s1, const char *const *s2)
                 default: NULL);                                                                                \
         }                                                                                                      \
         if ((ht)->table.capacity == 0) {                                                                       \
-            sp_da_resize(&(ht)->table, expected < SP_HT_INIT_CAP ? expected : SP_HT_INIT_CAP);                 \
+            sp_da_resize(&(ht)->table, expected < SP_HT_INIT_CAP ? SP_HT_INIT_CAP : expected);                 \
         } else if ((ht)->count > 0) {                                                                          \
             __typeof__((ht)->table) old_table = (ht)->table;                                                   \
             (ht)->table = (__typeof__((ht)->table)) {0};                                                       \
