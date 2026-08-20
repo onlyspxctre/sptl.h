@@ -478,7 +478,7 @@ static inline uint32_t hash_fnv(const char *const *data, const size_t bytes) {
     uint32_t hash = FNV_OFFSET_BASIS_32;
 
     for (size_t i = 0; i < bytes; ++i) {
-        hash = (hash ^ (uint32_t) (*data)[i]) * FNV_PRIME_32; // EXPERIMENTAL: casting to uint32_t may break hash function
+        hash = (hash ^ (unsigned) (*data)[i]) * FNV_PRIME_32;
     }
 
     return hash;
