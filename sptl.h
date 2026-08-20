@@ -518,8 +518,8 @@ static inline uint32_t sp_ht_streq(const char *const *s1, const char *const *s2)
 #define sp_ht_key_type(ht) __typeof__((ht)->table.data->data->key)
 #define sp_ht_value_type(ht) __typeof__((ht)->table.data->data->value)
 
-#define SP_HT_LOAD_CAPACITY 0.9
-#define SP_HT_INIT_CAP 16
+#define SP_HT_LOAD_CAPACITY 0.75
+#define SP_HT_INIT_CAP 8
 
 #define sp_ht_reserve(ht, __expected__)                                                                        \
     do {                                                                                                       \
