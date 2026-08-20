@@ -332,6 +332,7 @@ static inline uint32_t sp_sv_eq(const Sp_String_View *lhs, const Sp_String_View 
         size_t capacity; \
     }
 
+// TODO: update to use sp_da_alloc() backend or similar
 #define SP_QUEUE_INIT_CAP SP_DA_INIT_CAP
 #define sp_queue_reserve(queue, __expected__)                                                                      \
     do {                                                                                                           \
@@ -345,6 +346,7 @@ static inline uint32_t sp_sv_eq(const Sp_String_View *lhs, const Sp_String_View 
                 capacity *= 2;                                                                                     \
             }                                                                                                      \
             __typeof__((queue)->data) data = (__typeof__((queue)->data)) calloc(capacity, sizeof(*(queue)->data)); \
+            assert(data);                                                                                          \
             for (size_t i = 0; i < (queue)->capacity; ++i) {                                                       \
                 data[i] = (queue)->data[((queue)->head + i) % (queue)->capacity];                                  \
             }                                                                                                      \
@@ -401,10 +403,12 @@ typedef struct sp_ll_node {
     do {                                                                            \
         if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */   \
             (ll)->head = calloc(1, sizeof(*(ll)->head) + sizeof((ll)->type));       \
+            assert((ll)->head);                                                     \
             *sp_ll_node_unwrap(ll, (ll)->head) = (element);                         \
             (ll)->tail = (ll)->head;                                                \
         } else {                                                                    \
             (ll)->tail->next = calloc(1, sizeof(*(ll)->tail) + sizeof((ll)->type)); \
+            assert((ll)->tail->next);                                               \
             (ll)->tail->next->prev = (ll)->tail;                                    \
             (ll)->tail = (ll)->tail->next;                                          \
             *sp_ll_node_unwrap(ll, (ll)->tail) = (element);                         \
@@ -415,10 +419,12 @@ typedef struct sp_ll_node {
     do {                                                                            \
         if ((ll)->head == NULL && (ll)->tail == NULL) { /* uninitialized state */   \
             (ll)->head = calloc(1, sizeof(*(ll)->head) + sizeof((ll)->type));       \
+            assert((ll)->head);                                                     \
             *sp_ll_node_unwrap(ll, (ll)->head) = (element);                         \
             (ll)->tail = (ll)->head;                                                \
         } else {                                                                    \
             (ll)->head->prev = calloc(1, sizeof(*(ll)->head) + sizeof((ll)->type)); \
+            assert((ll)->head->prev);                                               \
             (ll)->head->prev->next = (ll)->head;                                    \
             (ll)->head = (ll)->head->prev;                                          \
             *sp_ll_node_unwrap(ll, (ll)->head) = (element);                         \
