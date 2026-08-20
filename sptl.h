@@ -121,7 +121,7 @@ __attribute__((format(printf, 2, 3))) static inline void sp_die(int code, const 
 #define sp_pair_params(name, Ta, Tb) Ta CONCAT(name, _left), Tb CONCAT(name, _right)
 
 /* Used to supply an Sp_Pair type as a function argument. */
-#define sp_pair_arg(pair) ((pair).left, (pair).right)
+#define sp_pair_arg(pair) (pair).left, (pair).right
 
 /* Rebind an Sp_Pair passed as a function argument into its own structure. */
 #define sp_pair_from_arg(name) {.left = CONCAT(name, _left), .right = CONCAT(name, _right)}
