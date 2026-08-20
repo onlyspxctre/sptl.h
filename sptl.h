@@ -201,7 +201,7 @@ static inline void __sp_da_alloc(void **data, size_t *capacity, size_t new_capac
         if (!(da)->data || (da)->count == 0) break;                    \
         if ((da)->count > 0)                                           \
             --(da)->count;                                             \
-        (da)->data[(da)->count] = (__typeof__(*(da)->data)){0};        \
+        (da)->data[(da)->count] = (__typeof__(*(da)->data)) {0};       \
         if ((da)->count < (size_t) (0.25 * (double) (da)->capacity)) { \
             sp_da_alloc(da, (da)->capacity / 2);                       \
         }                                                              \
@@ -371,7 +371,7 @@ static inline uint32_t sp_sv_eq(const Sp_String_View *lhs, const Sp_String_View 
         }                         \
     } while (0)
 
-#define sp_queue_peek(queue) ((queue)->count == 0 ? ((__typeof__(*(queue)->data)){0}) : (queue)->data[(queue)->head % (queue)->capacity])
+#define sp_queue_peek(queue) ((queue)->count == 0 ? ((__typeof__(*(queue)->data)) {0}) : (queue)->data[(queue)->head % (queue)->capacity])
 
 #define sp_queue_free(queue)                  \
     do {                                      \
@@ -712,26 +712,26 @@ static inline void __sp_bt_alloc(void **data, size_t *height, size_t new_height,
         }                                                                                              \
     } while (0)
 
-#define sp_heapify(heap)                                                                             \
-    do {                                                                                             \
-        size_t idx = 0;                                                                              \
-        while (idx < (heap)->count) {                                                                \
-            size_t next_idx = idx;                                                                   \
-            if (sp_bt_node_lchild_idx(idx) < (heap)->count) {                                        \
-                next_idx = sp_bt_node_lchild_idx(idx);                                               \
-            }                                                                                        \
-            if (sp_bt_node_rchild_idx(idx) < (heap)->count) {                                        \
-                if ((heap)->cmp((heap)->data[sp_bt_node_rchild_idx(idx)], (heap)->data[next_idx])) { \
-                    next_idx = sp_bt_node_rchild_idx(idx);                                           \
-                }                                                                                    \
-            }                                                                                        \
-            if (next_idx != idx && !(heap)->cmp((heap)->data[idx], (heap)->data[next_idx])) {        \
-                sp_swap(&(heap)->data[idx], &(heap)->data[next_idx]);                                \
-                idx = next_idx;                                                                      \
-            } else {                                                                                 \
-                break;                                                                               \
-            }                                                                                        \
-        }                                                                                            \
+#define sp_heapify(heap)                                                                               \
+    do {                                                                                               \
+        size_t parent_idx = 0;                                                                         \
+        while (parent_idx < (heap)->count) {                                                           \
+            size_t idx = parent_idx;                                                                   \
+            if (sp_bt_node_lchild_idx(parent_idx) < (heap)->count) {                                   \
+                idx = sp_bt_node_lchild_idx(parent_idx);                                               \
+            }                                                                                          \
+            if (sp_bt_node_rchild_idx(parent_idx) < (heap)->count) {                                   \
+                if ((heap)->cmp((heap)->data[sp_bt_node_rchild_idx(parent_idx)], (heap)->data[idx])) { \
+                    idx = sp_bt_node_rchild_idx(parent_idx);                                           \
+                }                                                                                      \
+            }                                                                                          \
+            if (parent_idx != idx && (heap)->cmp((heap)->data[idx], (heap)->data[parent_idx])) {       \
+                sp_swap(&(heap)->data[idx], &(heap)->data[parent_idx]);                                \
+                parent_idx = idx;                                                                      \
+            } else {                                                                                   \
+                break;                                                                                 \
+            }                                                                                          \
+        }                                                                                              \
     } while (0)
 
 /*
